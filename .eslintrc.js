@@ -1,25 +1,59 @@
 module.exports = {
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    project: 'tsconfig.json',
-    tsconfigRootDir: __dirname,
-    sourceType: 'module',
-  },
-  plugins: ['@typescript-eslint/eslint-plugin'],
-  extends: [
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-  ],
-  root: true,
   env: {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
+    'prettier',
+    'plugin:prettier/recommended',
+  ],
+  plugins: ['import', '@typescript-eslint', 'prettier'],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: ['./tsconfig.json', './tsconfig.eslint.json'],
+    tsconfigRootDir: __dirname,
+    sourceType: 'module',
+  },
+  root: true,
   rules: {
-    '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
+    'import/no-unresolved': 'error',
+    // "@typescript-eslint/no-explicit-any": "off",
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    // "@typescript-eslint/explicit-function-return-type": "off",
+    '@typescript-eslint/camelcase': 'off',
+    'no-unused-vars': 'warn',
+    camelcase: 'off',
+    'spaced-comment': 'error',
+    quotes: ['error', 'single'],
+    'no-duplicate-imports': 'error',
+    'import/newline-after-import': ['error', { count: 1 }],
+    '@typescript-eslint/no-use-before-define': [
+      'error',
+      {
+        functions: false,
+        classes: true,
+        variables: true,
+        typedefs: true,
+      },
+    ],
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto',
+      },
+    ],
+  },
+  settings: {
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
+    },
+    'import/resolver': {
+      typescript: true,
+      node: true,
+    },
   },
 };
