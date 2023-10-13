@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import { logger } from './config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -11,5 +12,5 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  console.log(err instanceof Error ? err.message : err);
+  logger.error(err instanceof Error ? err.message : err);
 });
