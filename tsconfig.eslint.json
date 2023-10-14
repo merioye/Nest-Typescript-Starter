@@ -1,10 +1,22 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["@types/node"],
+    "types": ["@types/node", "jest"],
     "noEmit": true,
     "allowJs": true
   },
-  "include": [".eslintrc.js"],
+  "include": [
+    ".eslintrc.js",
+    "jest.config.js",
+    "test",
+    "__tests__",
+    "**/*spec.ts",
+    "**/*test.ts",
+    "src/**/__tests__",
+    "src/**/test",
+    "src/**/__mocks__",
+    "src/**/mocks",
+    "src/**/test-setup.ts"
+  ],
   "exclude": ["node_modules"]
 }
