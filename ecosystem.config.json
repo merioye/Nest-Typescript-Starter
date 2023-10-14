@@ -1,0 +1,14 @@
+{
+  "apps": [
+    {
+      "name": "nest + typescript template",
+      "script": "dist/main.js",
+      "autorestart": true,
+      "watch": false,
+      "time": true,
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  ]
+}
