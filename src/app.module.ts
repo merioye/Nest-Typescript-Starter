@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,6 +8,6 @@ import { Config } from './config';
 @Module({
   imports: [ConfigModule.forRoot(Config)],
   controllers: [AppController],
-  providers: [AppService, ShutdownService],
+  providers: [Logger, AppService, ShutdownService],
 })
 export class AppModule {}
