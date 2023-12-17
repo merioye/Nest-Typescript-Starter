@@ -6,49 +6,54 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import { logger } from 'src/config';
+import { Request } from 'express';
+import { Logger } from 'winston';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly httpAdapterHost: HttpAdapterHost;
+  private readonly logger: Logger;
 
-  constructor(httpAdapterHost: HttpAdapterHost) {
+  constructor(httpAdapterHost: HttpAdapterHost, logger: Logger) {
     this.httpAdapterHost = httpAdapterHost;
+    this.logger = logger;
   }
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
 
     const ctx = host.switchToHttp();
+    const request = ctx.getRequest<Request>();
 
-    const httpStatus =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    let statusCode: HttpStatus;
+    let message: string;
+    let type: string;
+    const path: string = request.path;
+    const location: string = `${request.method} ${path}`;
 
-    const message =
-      exception instanceof HttpException
-        ? exception.message
-        : 'Something went wrong';
+    if (exception instanceof HttpException) {
+      statusCode = exception.getStatus();
+      message = exception.message;
+      type = exception.name;
+    } else {
+      statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+      message = 'Something went wrong';
+      type = 'Internal Server Error';
+    }
 
-    const type =
-      exception instanceof HttpException
-        ? exception.name
-        : 'Internal Server Error';
-
-    logger.error(message);
+    this.logger.error(message, { path, location });
 
     const responseBody = {
       errors: [
         {
           type,
           message,
-          path: '',
-          location: '',
+          path,
+          location,
         },
       ],
     };
 
-    httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
+    httpAdapter.reply(ctx.getResponse(), responseBody, statusCode);
   }
 }

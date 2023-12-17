@@ -1,4 +1,5 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
+import { Logger } from 'winston';
 import { AppService } from './app.service';
 
 @Controller()
@@ -13,7 +14,7 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    this.logger.log('Hello, friends');
+    this.logger.info('Hello, friends');
     return this.appService.getHello();
   }
 }

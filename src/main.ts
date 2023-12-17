@@ -20,7 +20,7 @@ async function bootstrap() {
   app.use(compression());
 
   const httpAdapterHost = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost));
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost, logger));
 
   const configService = app.get(ConfigService);
   const PORT = configService.getOrThrow<number>('PORT');
