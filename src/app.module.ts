@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { Logger } from 'winston';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { Config, logger } from './config';
-import { ShutdownModule } from './modules';
+import { ConfigOptions } from './config';
+import { GracefulShutdownModule, HealthModule, LoggerModule } from './modules';
+import { AllExceptionsFilter } from './filters';
 
 @Module({
-  imports: [ShutdownModule, ConfigModule.forRoot(Config)],
-  controllers: [AppController],
-  providers: [AppService, { provide: Logger, useValue: logger }],
+  imports: [
+    ConfigModule.forRoot(ConfigOptions),
+    LoggerModule,
+    GracefulShutdownModule,
+    HealthModule,
+  ],
+  providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
 })
 export class AppModule {}

@@ -1,6 +1,8 @@
-import { DocumentBuilder } from '@nestjs/swagger';
+import { DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 
-export const buildSwaggerConfig = (PORT: number) => {
+export const buildSwaggerConfig = (
+  PORT: number,
+): Omit<OpenAPIObject, 'paths'> => {
   const config = new DocumentBuilder()
     .setTitle('Nest + Typescript template')
     .setDescription(

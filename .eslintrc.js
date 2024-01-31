@@ -22,11 +22,10 @@ module.exports = {
   root: true,
   rules: {
     'import/no-unresolved': 'error',
-    // "@typescript-eslint/no-explicit-any": "off",
     '@typescript-eslint/no-non-null-assertion': 'off',
-    // "@typescript-eslint/explicit-function-return-type": "off",
+    '@typescript-eslint/explicit-function-return-type': 'warn',
     '@typescript-eslint/camelcase': 'off',
-    'no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': ['warn'],
     camelcase: 'off',
     'spaced-comment': 'error',
     quotes: ['error', 'single'],

@@ -1,4 +1,5 @@
 import {
+  Inject,
   ExceptionFilter,
   Catch,
   ArgumentsHost,
@@ -7,17 +8,15 @@ import {
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { Request } from 'express';
-import { Logger } from 'winston';
+import { LoggerToken } from '../constants';
+import { ILogger } from '../interfaces';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private readonly httpAdapterHost: HttpAdapterHost;
-  private readonly logger: Logger;
-
-  constructor(httpAdapterHost: HttpAdapterHost, logger: Logger) {
-    this.httpAdapterHost = httpAdapterHost;
-    this.logger = logger;
-  }
+  constructor(
+    @Inject(LoggerToken) private readonly logger: ILogger,
+    private readonly httpAdapterHost: HttpAdapterHost,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
@@ -30,6 +29,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let type: string;
     const path: string = request.path;
     const location: string = `${request.method} ${path}`;
+    const result: null = null;
 
     if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
@@ -44,6 +44,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     this.logger.error(message, { path, location });
 
     const responseBody = {
+      statusCode,
+      result,
+      success: false,
       errors: [
         {
           type,
