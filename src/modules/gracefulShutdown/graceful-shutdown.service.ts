@@ -18,13 +18,13 @@ export class GracefulShutdownService
 {
   private app: NestExpressApplication;
 
-  constructor(@Inject(LoggerToken) private readonly logger: ILogger) {}
+  public constructor(@Inject(LoggerToken) private readonly logger: ILogger) {}
 
-  setApp(app: NestExpressApplication): void {
+  public setApp(app: NestExpressApplication): void {
     this.app = app;
   }
 
-  onApplicationBootstrap(): void {
+  public onApplicationBootstrap(): void {
     if (!this.app) {
       throw new Error(
         'You have to invoke `setApp(app)` method of `ShutdownService` in project entrypoint file to handle graceful server shutdown!',
@@ -32,7 +32,7 @@ export class GracefulShutdownService
     }
   }
 
-  beforeApplicationShutdown(signal: string = 'Termination'): void {
+  public beforeApplicationShutdown(signal: string = 'Termination'): void {
     this.logger.info(`${signal} signal received, closing http server...`);
     this.app.getHttpServer().close((err) => {
       if (err) {
@@ -44,7 +44,7 @@ export class GracefulShutdownService
     });
   }
 
-  onApplicationShutdown(): void {
+  public onApplicationShutdown(): void {
     // Close any resources or perform cleanup before shutting down
     // For example, close database connections, release resources, etc.
   }

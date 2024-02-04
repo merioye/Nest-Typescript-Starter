@@ -55,7 +55,7 @@ export class WinstonLogger implements ILogger {
     });
   }
 
-  static getInstance(): WinstonLogger {
+  public static getInstance(): WinstonLogger {
     if (!WinstonLogger.instance) {
       WinstonLogger.instance = new WinstonLogger();
     }
@@ -66,27 +66,27 @@ export class WinstonLogger implements ILogger {
     return typeof data === 'string' ? data : JSON.stringify(data);
   }
 
-  log(message: any, ...optionalParams: any[]): void {
+  public log(message: any, ...optionalParams: any[]): void {
     this.logger.log('info', this.stringify(message), optionalParams);
   }
 
-  info(message: any, ...optionalParams: any[]): void {
+  public info(message: any, ...optionalParams: any[]): void {
     this.logger.info(this.stringify(message), optionalParams);
   }
 
-  debug(message: any, ...optionalParams: any[]): void {
+  public debug(message: any, ...optionalParams: any[]): void {
     this.logger.debug(this.stringify(message), optionalParams);
   }
 
-  verbose(message: any, ...optionalParams: any[]): void {
+  public verbose(message: any, ...optionalParams: any[]): void {
     this.logger.verbose(this.stringify(message), optionalParams);
   }
 
-  error(message: any, ...optionalParams: any[]): void {
+  public error(message: any, ...optionalParams: any[]): void {
     this.logger.error(this.stringify(message), optionalParams);
   }
 
-  warn(message: any, ...optionalParams: any[]): void {
+  public warn(message: any, ...optionalParams: any[]): void {
     this.logger.warn(this.stringify(message), optionalParams);
   }
 }

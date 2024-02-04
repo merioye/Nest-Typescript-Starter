@@ -7,13 +7,13 @@ import { ILogger } from '../../interfaces';
 
 @Controller()
 export class HealthController {
-  constructor(
+  public constructor(
     @Inject(LoggerToken) private readonly logger: ILogger,
     @Inject(HealthServiceToken) private readonly healthService: IHealthService,
   ) {}
 
   @Get('/healthcheck')
-  checkHealth(): Health {
+  public checkHealth(): Health {
     this.logger.info('Request for checking server health');
     return this.healthService.health();
   }

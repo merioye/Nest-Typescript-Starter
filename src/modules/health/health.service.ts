@@ -4,7 +4,7 @@ import { Health } from './types';
 
 @Injectable()
 export class HealthService implements IHealthService {
-  health(): Health {
+  public health(): Health {
     return {
       message: 'Server is up and running...',
       status: 'ok',

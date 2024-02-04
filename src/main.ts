@@ -37,7 +37,7 @@ async function bootstrap(): Promise<void> {
   gracefulShutdownService.setApp(app);
 
   const document = SwaggerModule.createDocument(app, buildSwaggerConfig(PORT));
-  SwaggerModule.setup(`/${API_PREFIX}/v1/api-docs`, app, document);
+  SwaggerModule.setup(`/${API_PREFIX}/docs`, app, document);
 
   await app.listen(PORT, () => logger.info(`Listening on PORT ${PORT} 🚀`));
 }
