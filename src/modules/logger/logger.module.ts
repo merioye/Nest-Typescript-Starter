@@ -4,7 +4,7 @@ import { WinstonLogger } from './winston.logger';
 
 @Global()
 @Module({
-  providers: [{ provide: LoggerToken, useClass: WinstonLogger }],
-  exports: [{ provide: LoggerToken, useClass: WinstonLogger }],
+  providers: [{ provide: LoggerToken, useValue: WinstonLogger.getInstance() }],
+  exports: [{ provide: LoggerToken, useValue: WinstonLogger.getInstance() }],
 })
 export class LoggerModule {}

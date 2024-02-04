@@ -6,6 +6,7 @@ import { ENVIRONMENT } from '../../constants';
 
 @Injectable()
 export class WinstonLogger implements ILogger {
+  private static instance: WinstonLogger;
   private readonly logger: Logger;
   private readonly customFormat = {
     console: format.printf(({ timestamp, level, stack, message }) => {
@@ -13,7 +14,7 @@ export class WinstonLogger implements ILogger {
     }),
   };
 
-  constructor() {
+  private constructor() {
     const isTestingEnvironment =
       (process.env.NODE_ENV as ENVIRONMENT) === ENVIRONMENT.TEST;
 
@@ -52,6 +53,13 @@ export class WinstonLogger implements ILogger {
         }),
       ],
     });
+  }
+
+  static getInstance(): WinstonLogger {
+    if (!WinstonLogger.instance) {
+      WinstonLogger.instance = new WinstonLogger();
+    }
+    return WinstonLogger.instance;
   }
 
   private stringify(data: any): string {

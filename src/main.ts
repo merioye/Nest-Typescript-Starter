@@ -10,7 +10,7 @@ import { GracefulShutdownService, WinstonLogger } from './modules';
 import { buildSwaggerConfig } from './config';
 import { CONFIG } from './constants';
 
-const logger = new WinstonLogger();
+const logger = WinstonLogger.getInstance();
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
