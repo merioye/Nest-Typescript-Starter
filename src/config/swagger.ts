@@ -1,12 +1,18 @@
 import { DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 
+/**
+ * Creates swagger configuration
+ *
+ * @param {number} PORT - Port which swagger will be served on
+ * @returns {Omit<OpenAPIObject, 'paths'>} - Swagger configuration
+ */
 export const buildSwaggerConfig = (
-  PORT: number,
+  PORT: number
 ): Omit<OpenAPIObject, 'paths'> => {
   const config = new DocumentBuilder()
     .setTitle('Nest + Typescript template')
     .setDescription(
-      'This is Nest + Typescript template application made with Nest and documented with Swagger',
+      'This is Nest + Typescript template application made with Nest and documented with Swagger'
     )
     .setVersion('1.0')
     .addServer(`http://localhost:${PORT}`, 'Local Server')

@@ -3,3 +3,6 @@ dist
 build
 coverage
 logs
+public
+.eslintrc.js
+jest.config.js

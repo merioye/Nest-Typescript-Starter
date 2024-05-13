@@ -1,0 +1,65 @@
+import {
+  Injectable,
+  ParseFileOptions,
+  ParseFilePipe,
+  PipeTransform,
+} from '@nestjs/common';
+import { RequestValidationError } from '@/common/errors';
+
+/**
+ * Custom Parse File Pipe
+ *
+ * This pipe extends the built-in ParseFilePipe and throws a custom validation
+ * error if the input value is not a valid file(s).
+ *
+ * @class CustomParseFilePipe
+ * @extends {ParseFilePipe}
+ * @implements {PipeTransform}
+ *
+ * @method transform(value: Express.Multer.File | Express.Multer.File[]): Promise<Express.Multer.File | Express.Multer.File[]> - Transforms the input value to a file object.
+ */
+@Injectable()
+export class CustomParseFilePipe
+  extends ParseFilePipe
+  implements PipeTransform
+{
+  /**
+   * Constructor for the CustomParseFilePipe.
+   *
+   * @constructor
+   * @param {string} fieldName - The name of the field which contains the file(s).
+   * @param {ParseFileOptions} [options] - An optional options object for the file(s) validation.
+   */
+  public constructor(
+    private readonly fieldName: string,
+    options?: ParseFileOptions
+  ) {
+    super(options);
+  }
+
+  /**
+   * Transforms the input value to a file object with the provided options (validations).
+   * If the transformation fails, it throws a RequestValidationError with the corresponding error messages.
+   *
+   * @param {Express.Multer.File | Express.Multer.File[]} value - The file(s) to be transformed.
+   * @returns {Promise<Express.Multer.File | Express.Multer.File[]>} - The transformed file(s).
+   * @throws {RequestValidationError} - If the transformation fails.
+   */
+  async transform(
+    value: Express.Multer.File | Express.Multer.File[]
+  ): Promise<Express.Multer.File | Express.Multer.File[]> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return await super.transform(value);
+    } catch (err) {
+      throw new RequestValidationError([
+        {
+          message: (err as Error)?.message,
+          field: this.fieldName,
+          location: 'body',
+          stack: null,
+        },
+      ]);
+    }
+  }
+}

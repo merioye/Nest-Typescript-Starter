@@ -1,9 +1,15 @@
+/**
+ * Environments in which the application could be running
+ */
 enum ENVIRONMENT {
   DEV = 'development',
   PROD = 'production',
   TEST = 'test',
 }
 
+/**
+ * Configuration keys
+ */
 enum CONFIG {
   PORT = 'PORT',
   NODE_ENV = 'NODE_ENV',
@@ -11,7 +17,4 @@ enum CONFIG {
   API_DEFAULT_VERSION = 'API_DEFAULT_VERSION',
 }
 
-// Dependency Injection Tokens
-const LoggerToken = Symbol('LoggerToken');
-
-export { ENVIRONMENT, CONFIG, LoggerToken };
+export { ENVIRONMENT, CONFIG };

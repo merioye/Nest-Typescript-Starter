@@ -15,7 +15,7 @@ module.exports = {
   plugins: ['import', '@typescript-eslint', 'jest', 'prettier'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: ['./tsconfig.json', './tsconfig.eslint.json'],
+    project: './tsconfig.json',
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
@@ -28,6 +28,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['warn'],
     camelcase: 'off',
     'spaced-comment': 'error',
+    'no-console': 'error',
     quotes: ['error', 'single'],
     'no-duplicate-imports': 'error',
     'import/newline-after-import': ['error', { count: 1 }],

@@ -1,14 +1,14 @@
-import { NestFactory } from '@nestjs/core';
+import { join } from 'path';
 import { VersioningType } from '@nestjs/common';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
-import helmet from 'helmet';
-import compression from 'compression';
 import { AppModule } from './app.module';
-import { GracefulShutdownService, WinstonLogger } from './modules';
 import { buildSwaggerConfig } from './config';
 import { CONFIG } from './constants';
+import { WinstonLogger } from './modules/common/logger';
+import { GracefulShutdownService } from './modules/core/gracefulShutdown';
 
 const logger = WinstonLogger.getInstance();
 
@@ -21,7 +21,7 @@ async function bootstrap(): Promise<void> {
   const PORT = configService.get<number>(CONFIG.PORT);
   const API_PREFIX = configService.get<string>(CONFIG.API_PREFIX);
   const API_DEFAULT_VERSION = configService.get<string>(
-    CONFIG.API_DEFAULT_VERSION,
+    CONFIG.API_DEFAULT_VERSION
   );
 
   app.enableShutdownHooks();
@@ -29,17 +29,16 @@ async function bootstrap(): Promise<void> {
     type: VersioningType.URI,
     defaultVersion: API_DEFAULT_VERSION,
   });
-  app.setGlobalPrefix(API_PREFIX);
-  app.use(helmet());
-  app.use(compression());
+  app.setGlobalPrefix(API_PREFIX!);
+  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   const gracefulShutdownService = app.get(GracefulShutdownService);
   gracefulShutdownService.setApp(app);
 
-  const document = SwaggerModule.createDocument(app, buildSwaggerConfig(PORT));
+  const document = SwaggerModule.createDocument(app, buildSwaggerConfig(PORT!));
   SwaggerModule.setup(`/${API_PREFIX}/docs`, app, document);
 
-  await app.listen(PORT, () => logger.info(`Listening on PORT ${PORT} 🚀`));
+  await app.listen(PORT!, () => logger.info(`Listening on PORT ${PORT} 🚀`));
 }
 
 bootstrap().catch((err: unknown) => {
