@@ -21,7 +21,7 @@ export class ForbiddenError extends CustomError {
    * @constructor
    * @param {string} [message='Action Forbidden'] - The error message.
    */
-  public constructor(message = 'Action Forbidden') {
+  public constructor(message = 'common.error.Action_Forbidden') {
     super(message, 'ForbiddenException', HttpStatus.FORBIDDEN);
     Object.setPrototypeOf(this, ForbiddenError.prototype);
   }

@@ -1,0 +1,26 @@
+{
+  "common": {
+    "success": {
+      "ok": "ok",
+      "Success": "Success"
+    },
+    "error": {
+      "Bad_Request": "Bad Request Exception",
+      "Conflict": "Conflict Exception",
+      "Action_Forbidden": "Action Forbidden",
+      "Internal_Server": "Internal Server Exception",
+      "Not_Authorized": "Not Authorized",
+      "Not_Found": "Not Found",
+      "Validation_Failed": "Validation Failed Exception",
+      "Invalid_value": "Invalid value",
+      "invalid_boolean": "{field} is not a valid boolean",
+      "invalid_int": "{field} is not a valid integer",
+      "invalid_uuid": "{field} is not a valid uuid"
+    }
+  },
+  "health": {
+    "success": {
+      "Server_is_up_and_running": "Server is up and running..."
+    }
+  }
+}

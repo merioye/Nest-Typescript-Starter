@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prebuild": "node scripts/prebuild.mjs",
     "build": "nest build",
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
@@ -13,6 +14,7 @@
     "start:dev": "cross-env NODE_ENV=development nest start --watch",
     "start:debug": "cross-env NODE_ENV=debuging nest start --debug --watch",
     "start:prod": "pm2 start ecosystem.config.json --no-daemon",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "jest --passWithNoTests",
@@ -27,7 +29,8 @@
     "test:e2e:ci": "jest --config jest.e2e.config.js --ci --passWithNoTests",
     "test:cov": "jest --coverage --passWithNoTests",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand --passWithNoTests",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "clean": "node scripts/clean.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^10.2.7",
@@ -40,6 +43,7 @@
     "helmet": "^7.0.0",
     "joi": "^17.11.0",
     "mongoose": "^8.3.1",
+    "nestjs-i18n": "^10.4.5",
     "pm2": "^5.3.0",
     "prisma": "^5.12.1",
     "reflect-metadata": "^0.1.13",
@@ -85,9 +89,14 @@
     "typescript": "^5.2.2"
   },
   "lint-staged": {
-    "*.ts": [
-      "npm run lint:fix",
+    "*.{ts,js}": [
+      "npm run lint:fix"
+    ],
+    "*.{json,ts,js,html}": [
       "npm run format:fix"
     ]
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

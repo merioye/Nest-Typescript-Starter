@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  ITranslatorService,
+  TranslatorServiceToken,
+} from '@/modules/common/translator';
 import { IHealthService } from '../interfaces';
 import { Health } from '../types';
 
@@ -7,11 +11,20 @@ import { Health } from '../types';
  *
  * @class HealthService
  * @implements {IHealthService}
- *
- * @method health() - Returns the health information about the application.
  */
 @Injectable()
 export class HealthService implements IHealthService {
+  /**
+   * Creates an instance of HealthService.
+   *
+   * @constructor
+   * @param {ITranslatorService<Translations>} translatorService - The translator service
+   */
+  public constructor(
+    @Inject(TranslatorServiceToken)
+    private readonly translatorService: ITranslatorService
+  ) {}
+
   /**
    * Returns the health information about the application.
    *
@@ -19,8 +32,8 @@ export class HealthService implements IHealthService {
    */
   public health(): Health {
     return {
-      message: 'Server is up and running...',
-      status: 'ok',
+      message: 'health.success.Server_is_up_and_running',
+      status: this.translatorService.t('common.success.ok'),
     };
   }
 }

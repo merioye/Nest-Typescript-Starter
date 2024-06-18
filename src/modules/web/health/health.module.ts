@@ -9,7 +9,7 @@ import { HealthService } from './services';
  * This module exposes a single endpoint that returns the health information
  * about the application.
  *
- * @class HealthModule
+ * @module HealthModule
  */
 @Module({
   controllers: [HealthController],

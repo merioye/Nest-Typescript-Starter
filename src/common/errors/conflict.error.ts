@@ -21,7 +21,7 @@ export class ConflictError extends CustomError {
    * @constructor
    * @param {string} [message='Conflict Exception'] - The error message.
    */
-  public constructor(message = 'Conflict Exception') {
+  public constructor(message = 'common.error.Conflict') {
     super(message, 'ConflictException', HttpStatus.CONFLICT);
     Object.setPrototypeOf(this, ConflictError.prototype);
   }

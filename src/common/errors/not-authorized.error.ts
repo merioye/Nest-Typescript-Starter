@@ -21,7 +21,7 @@ export class NotAuthorizedError extends CustomError {
    * @constructor
    * @param {string} [message='Not Authorized'] - The error message.
    */
-  public constructor(message = 'Not Authorized') {
+  public constructor(message = 'common.error.Not_Authorized') {
     super(message, 'NotAuthorizedException', HttpStatus.UNAUTHORIZED);
     Object.setPrototypeOf(this, NotAuthorizedError.prototype);
   }

@@ -1,17 +1,23 @@
-import * as path from 'path';
+import { join, resolve } from 'path';
 import { ValidationPipeOptions } from '@nestjs/common';
 import { ConfigModuleOptions } from '@nestjs/config';
 import { RequestValidationError } from '@/common/errors';
 import Joi from 'joi';
-import { ErrorFormat } from '@/types';
-import { ENVIRONMENT } from '@/constants';
+import {
+  ErrorFormat,
+  LoggerModuleOptions,
+  TranslatorModuleOptions,
+} from '@/types';
+import { CONFIG, ENVIRONMENT } from '@/constants';
 
 const { DEV, TEST, PROD } = ENVIRONMENT;
 
-// ConfigModule options
+/**
+ * ConfigModule options
+ */
 const configOptions: ConfigModuleOptions = {
   isGlobal: true,
-  envFilePath: path.join(__dirname, `../../.env.${process.env.NODE_ENV}`),
+  envFilePath: join(__dirname, `../../.env.${process.env[CONFIG.NODE_ENV]}`),
   validationSchema: Joi.object({
     PORT: Joi.number().default(5000),
     NODE_ENV: Joi.string().valid(DEV, TEST, PROD).required(),
@@ -23,14 +29,16 @@ const configOptions: ConfigModuleOptions = {
   },
 };
 
-// ValidationPipe options
+/**
+ * ValidationPipe options
+ */
 const validationPipeOptions: ValidationPipeOptions = {
   whitelist: true,
   exceptionFactory: (errors) => {
     const formatedErrors = errors?.map((error): ErrorFormat => {
       const message = Object.values(error.constraints || {})[0];
       return {
-        message: message || 'Invalid value',
+        message: message || 'common.error.Invalid_value',
         field: error.property,
         location: 'body',
         stack: null,
@@ -40,4 +48,32 @@ const validationPipeOptions: ValidationPipeOptions = {
   },
 };
 
-export { configOptions, validationPipeOptions };
+/**
+ * LoggerModule options
+ */
+const loggerModuleOptions: LoggerModuleOptions = {
+  environment: process.env[CONFIG.NODE_ENV] as ENVIRONMENT,
+  logsDirPath: resolve(process.cwd(), 'logs'),
+};
+
+/**
+ * TranslatorModule options
+ */
+const translatorModuleOptions: TranslatorModuleOptions = {
+  fallbackLanguage: 'en',
+  translationsDirPath: resolve(
+    process.cwd(),
+    `${
+      process.env[CONFIG.NODE_ENV] === ENVIRONMENT.PROD ? 'dist' : 'src'
+    }/translations`
+  ),
+  translationsFileName: 'translations.json',
+  langExtractionKey: 'lang',
+};
+
+export {
+  configOptions,
+  validationPipeOptions,
+  loggerModuleOptions,
+  translatorModuleOptions,
+};

@@ -16,8 +16,6 @@ import { ErrorFormat } from '@/types';
  * @class CustomParseUUIDPipe
  * @extends {ParseUUIDPipe}
  * @implements {PipeTransform}
- *
- * @method transform(value: string, metadata: ArgumentMetadata): Promise<string> - Transforms the input value to a uuid.
  */
 @Injectable()
 export class CustomParseUUIDPipe
@@ -41,7 +39,9 @@ export class CustomParseUUIDPipe
       const { data, type } = metadata;
       const errors: ErrorFormat[] = [
         {
-          message: `${data} is not a uuid`,
+          message: `common.error.invalid_uuid_?args=${JSON.stringify({
+            field: data,
+          })}`,
           field: data || '',
           location: type,
           stack: null,

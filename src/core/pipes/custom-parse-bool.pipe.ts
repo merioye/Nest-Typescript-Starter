@@ -16,8 +16,6 @@ import { ErrorFormat } from '@/types';
  * @class CustomParseBoolPipe
  * @extends {ParseBoolPipe}
  * @implements {PipeTransform}
- *
- * @method transform(value: string | boolean, metadata: ArgumentMetadata): Promise<boolean> - Transforms the input value to a boolean.
  */
 @Injectable()
 export class CustomParseBoolPipe
@@ -44,7 +42,9 @@ export class CustomParseBoolPipe
       const { data, type } = metadata;
       const errors: ErrorFormat[] = [
         {
-          message: `${data} is not a valid boolean`,
+          message: `common.error.invalid_boolean_?args=${JSON.stringify({
+            field: data,
+          })}`,
           field: data || '',
           location: type,
           stack: null,

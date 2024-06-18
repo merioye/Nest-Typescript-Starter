@@ -5,11 +5,6 @@
  * @class CustomError
  * @extends {Error}
  *
- * @property {string} message - The error message.
- * @property {string} name - The name of the error.
- *
- * @method getStatus(): number - Returns the HTTP status code of the error.
- *
  * @example
  * const error = new CustomError('Email already in use', 'ConflictException', HttpStatus.CONFLICT);
  */

@@ -5,7 +5,7 @@ import { Health } from '../types';
  *
  * @interface IHealthService
  *
- * @method health() - Returns the health information about the application.
+ * @method health - Returns the health information about the application.
  */
 export interface IHealthService {
   health(): Health;

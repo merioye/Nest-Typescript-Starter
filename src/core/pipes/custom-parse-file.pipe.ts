@@ -15,8 +15,6 @@ import { RequestValidationError } from '@/common/errors';
  * @class CustomParseFilePipe
  * @extends {ParseFilePipe}
  * @implements {PipeTransform}
- *
- * @method transform(value: Express.Multer.File | Express.Multer.File[]): Promise<Express.Multer.File | Express.Multer.File[]> - Transforms the input value to a file object.
  */
 @Injectable()
 export class CustomParseFilePipe

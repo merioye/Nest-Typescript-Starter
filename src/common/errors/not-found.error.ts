@@ -21,7 +21,7 @@ export class NotFoundError extends CustomError {
    * @constructor
    * @param {string} [message='Not Found'] - The error message.
    */
-  public constructor(message = 'Not Found') {
+  public constructor(message = 'common.error.Not_Found') {
     super(message, 'NotFoundException', HttpStatus.NOT_FOUND);
     Object.setPrototypeOf(this, NotFoundError.prototype);
   }

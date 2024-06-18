@@ -16,8 +16,6 @@ import { ErrorFormat } from '@/types';
  * @class CustomParseIntPipe
  * @extends {ParseIntPipe}
  * @implements {PipeTransform}
- *
- * @method transform(value: string, metadata: ArgumentMetadata): Promise<number> - Transforms the input value to a integer.
  */
 @Injectable()
 export class CustomParseIntPipe extends ParseIntPipe implements PipeTransform {
@@ -38,7 +36,9 @@ export class CustomParseIntPipe extends ParseIntPipe implements PipeTransform {
       const { data, type } = metadata;
       const errors: ErrorFormat[] = [
         {
-          message: `${data} is not a valid integer`,
+          message: `common.error.invalid_int_?args=${JSON.stringify({
+            field: data,
+          })}`,
           field: data || '',
           location: type,
           stack: null,

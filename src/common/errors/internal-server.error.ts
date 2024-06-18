@@ -21,7 +21,7 @@ export class InternalServerError extends CustomError {
    * @constructor
    * @param {string} message - The error message.
    */
-  public constructor(message = 'Internal Server Exception') {
+  public constructor(message = 'common.error.Internal_Server') {
     super(message, 'InternalServerException', HttpStatus.INTERNAL_SERVER_ERROR);
     Object.setPrototypeOf(this, InternalServerError.prototype);
   }

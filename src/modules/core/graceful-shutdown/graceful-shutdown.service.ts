@@ -15,11 +15,6 @@ import { ILogger, LoggerToken } from '@/modules/common/logger';
  *
  * @class GracefulShutdownService
  * @implements {OnApplicationShutdown, BeforeApplicationShutdown, OnApplicationBootstrap}
- *
- * @method setApp(app: NestExpressApplication): void - Sets the NestJS application instance.
- * @method onApplicationBootstrap(): void - Invoked after the application bootstrap.
- * @method beforeApplicationShutdown(signal: string = 'Termination'): void - Handles graceful shutdown of the application when a signal is received.
- * @method onApplicationShutdown(signal: string = 'Termination'): void - Invoked when the application should be shut down.
  */
 @Injectable()
 export class GracefulShutdownService

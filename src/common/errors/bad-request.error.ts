@@ -21,7 +21,7 @@ export class BadRequestError extends CustomError {
    * @constructor
    * @param {string} [message='Bad Request Exception'] - The error message.
    */
-  public constructor(message = 'Bad Request Exception') {
+  public constructor(message = 'common.error.Bad_Request') {
     super(message, 'BadRequestException', HttpStatus.BAD_REQUEST);
     Object.setPrototypeOf(this, BadRequestError.prototype);
   }

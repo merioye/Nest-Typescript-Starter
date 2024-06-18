@@ -5,11 +5,17 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import compression from 'compression';
 import helmet from 'helmet';
-import { configOptions, validationPipeOptions } from './config';
+import {
+  configOptions,
+  loggerModuleOptions,
+  translatorModuleOptions,
+  validationPipeOptions,
+} from './config';
 import { AllExceptionsFilter } from './core/filters';
+import { TranslateMessageInterceptor } from './core/interceptors/response';
 import { CommonAppModule } from './modules/common';
 import { CoreAppModule } from './modules/core';
 import { WebAppModule } from './modules/web';
@@ -20,7 +26,7 @@ import { WebAppModule } from './modules/web';
  * This module is the entry point of the application. It initializes the imported modules
  * and providers.
  *
- * @class AppModule
+ * @module AppModule
  * @implements {NestModule}
  *
  * @method configure(consumer: MiddlewareConsumer): void - Configures the application middlewares
@@ -29,10 +35,14 @@ import { WebAppModule } from './modules/web';
   imports: [
     ConfigModule.forRoot(configOptions),
     CoreAppModule,
-    CommonAppModule,
+    CommonAppModule.forRoot({
+      logger: loggerModuleOptions,
+      translator: translatorModuleOptions,
+    }),
     WebAppModule,
   ],
   providers: [
+    { provide: APP_INTERCEPTOR, useClass: TranslateMessageInterceptor },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     {
       provide: APP_PIPE,

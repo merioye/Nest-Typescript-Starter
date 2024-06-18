@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
 import { createLogger, format, Logger, transports } from 'winston';
+import { LoggerModuleOptions } from '@/types';
 import { ENVIRONMENT } from '@/constants';
 import { ILogger } from '../interfaces';
 
@@ -9,14 +9,6 @@ import { ILogger } from '../interfaces';
  *
  * @class WinstonLogger
  * @implements {ILogger}
- *
- * @method getInstance(): WinstonLogger - Static method to get the singleton instance of the logger
- * @method log(level: string, message: any, ...optionalParams: any[]): void - Logs a message
- * @method warn(message: any, ...optionalParams: any[]): void - Logs a warning message
- * @method error(message: any, ...optionalParams: any[]): void - Logs an error message
- * @method debug(message: any, ...optionalParams: any[]): void - Logs a debug message
- * @method info(message: any, ...optionalParams: any[]): void - Logs an informational message
- * @method verbose(message: any, ...optionalParams: any[]): void - Logs a verbose message
  *
  * @example
  * const logger = WinstonLogger.getInstance();
@@ -39,10 +31,10 @@ export class WinstonLogger implements ILogger {
    * It cannot be instantiated outside of the class
    *
    * @constructor
+   * @param {LoggerModuleOptions} options - Logger module options
    */
-  private constructor() {
-    const isTestingEnvironment =
-      (process.env.NODE_ENV as ENVIRONMENT) === ENVIRONMENT.TEST;
+  private constructor({ environment, logsDirPath }: LoggerModuleOptions) {
+    const isTestingEnvironment = environment === ENVIRONMENT.TEST;
 
     this.logger = createLogger({
       level: 'info',
@@ -67,13 +59,13 @@ export class WinstonLogger implements ILogger {
         }),
         new transports.File({
           level: 'error',
-          dirname: 'logs',
+          dirname: logsDirPath,
           filename: 'error.log',
           silent: isTestingEnvironment,
         }),
         new transports.File({
           level: 'debug',
-          dirname: 'logs',
+          dirname: logsDirPath,
           filename: 'combined.log',
           silent: isTestingEnvironment,
         }),
@@ -84,11 +76,12 @@ export class WinstonLogger implements ILogger {
   /**
    * Get the singleton instance of the logger
    *
+   * @static
    * @returns {WinstonLogger} instance
    */
-  public static getInstance(): WinstonLogger {
+  public static getInstance(options: LoggerModuleOptions): WinstonLogger {
     if (!WinstonLogger.instance) {
-      WinstonLogger.instance = new WinstonLogger();
+      WinstonLogger.instance = new WinstonLogger(options);
     }
     return WinstonLogger.instance;
   }

@@ -1,0 +1,26 @@
+{
+  "common": {
+    "success": {
+      "ok": "ٹھیک ہے",
+      "Success": "کامیابی"
+    },
+    "error": {
+      "Bad_Request": "برا درخواست استثناء",
+      "Conflict": "تضاد استثناء",
+      "Action_Forbidden": "عمل ممنوع ہے",
+      "Internal_Server": "اندرونی سرور استثناء",
+      "Not_Authorized": "اجازت نہیں",
+      "Not_Found": "نہیں ملا",
+      "Validation_Failed": "توثیق ناکام استثناء",
+      "Invalid_value": "غیر درست قیمت",
+      "invalid_boolean": "درست بولین نہیں ہے {field}",
+      "invalid_int": "درست عدد نہیں ہے {field}",
+      "invalid_uuid": "UUID نہیں ہے درست {field}"
+    }
+  },
+  "health": {
+    "success": {
+      "Server_is_up_and_running": "...سرور تیار ہے اور چل رہا ہے"
+    }
+  }
+}

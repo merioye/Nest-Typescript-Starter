@@ -9,11 +9,6 @@ import { ErrorFormat } from '@/types';
  * @class RequestValidationError
  * @extends {Error}
  *
- * @property {ErrorFormat[]} errors - The list of validation errors.
- * @property {string} name - The name of the error.
- *
- * @method getStatus(): number - Returns the HTTP status code of the error.
- *
  * @example
  * const error = new RequestValidationError(errors);
  */
@@ -32,7 +27,7 @@ export class RequestValidationError extends Error {
    * @param {ErrorFormat[]} errors The list of validation errors.
    */
   public constructor(public readonly errors: ErrorFormat[]) {
-    super('Validation Failed Exception');
+    super('common.error.Validation_Failed');
     Object.setPrototypeOf(this, RequestValidationError.prototype);
   }
 

@@ -9,21 +9,17 @@ import { ApiResponseParams, ErrorFormat } from '@/types';
  *
  * @class ApiResponse
  *
- * @property {ErrorFormat[]} errors - The list of errors.
- * @property {object} errorInfo - The error information for debugging.
- * @property {number} statusCode - The status code of the API response.
- * @property {string} message - The message of the API response.
- * @property {boolean} success - A flag indicating if the API call was successful or not.
- * @property {T} result - The result of the API call.
- *
  * @example
  * const response = new ApiResponse({ result: { name: 'John Doe' } });
  */
 export class ApiResponse<T> {
   public readonly errors: ErrorFormat[] = [];
+  // The error (if any) information for debugging.
   public readonly errorInfo = {};
+  // The result of the API call.
   public readonly result: T;
   public readonly message: string;
+  // A flag indicating if the API call was successful or not.
   public readonly success: boolean;
   public readonly statusCode: number;
 
@@ -35,7 +31,7 @@ export class ApiResponse<T> {
    */
   public constructor({
     result,
-    message = 'Success',
+    message = 'common.success.Success',
     statusCode = 200,
   }: ApiResponseParams<T>) {
     this.result = result;

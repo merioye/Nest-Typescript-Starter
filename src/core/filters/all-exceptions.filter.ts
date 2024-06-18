@@ -11,9 +11,14 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { Request } from 'express';
 import { CustomError, RequestValidationError } from '@/common/errors';
 import { ILogger, LoggerToken } from '@/modules/common/logger';
+import {
+  ITranslatorService,
+  TranslatorServiceToken,
+} from '@/modules/common/translator';
 import { v4 as uuidv4 } from 'uuid';
 import { LoggerErrorMetadata } from '@/types';
 import { CONFIG, ENVIRONMENT } from '@/constants';
+import { FormatTranslationKey } from '../base/translations';
 
 /**
  * This is a custom exception filter that catches all exceptions and returns
@@ -50,12 +55,14 @@ import { CONFIG, ENVIRONMENT } from '@/constants';
  *     mode, or null otherwise
  *
  * @class AllExceptionsFilter
+ * @extends {FormatTranslationKey}
  * @implements {ExceptionFilter}
- *
- * @method catch(exception: Error, host: ArgumentsHost): void - The method that is called when an exception is thrown
  */
 @Catch()
-export class AllExceptionsFilter implements ExceptionFilter {
+export class AllExceptionsFilter
+  extends FormatTranslationKey
+  implements ExceptionFilter
+{
   /**
    * An array of exceptions that have a getStatus method
    */
@@ -84,9 +91,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
    */
   public constructor(
     @Inject(LoggerToken) private readonly logger: ILogger,
+    @Inject(TranslatorServiceToken)
+    private readonly translatorService: ITranslatorService,
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly configService: ConfigService
-  ) {}
+  ) {
+    super();
+  }
 
   /**
    * Handles any unhandled exceptions in the application and returns an error
@@ -117,10 +128,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const hasMessage = this.withMessageExceptions.some(
       (Exception) => exception instanceof Exception
     );
-    const message =
-      hasMessage || !isProduction
-        ? exception?.message || 'Internal Server Exception'
-        : 'Internal Server Exception';
+    const translationKey = hasMessage
+      ? exception.message
+      : !isProduction
+      ? exception?.message || 'common.error.Internal_Server'
+      : 'common.error.Internal_Server';
+    const { key, args } = this.formatTranslationKey(translationKey);
+    const message = this.translatorService.t(key, args);
 
     const stack = exception?.stack;
     const path = request.path;
@@ -153,7 +167,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       },
       errors:
         exception instanceof RequestValidationError
-          ? exception?.errors
+          ? exception?.errors.map((error) => {
+              const { key, args } = this.formatTranslationKey(error.message);
+              return {
+                ...error,
+                message: this.translatorService.t(key, args),
+              };
+            })
           : [
               {
                 message,

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { GracefulShutdownModule } from './gracefulShutdown';
+import { GracefulShutdownModule } from './graceful-shutdown';
 
 /**
  * The CoreAppModule is a module that contains all the framework related features
  * and services. These features are globally available in the application.
  *
- * @class CoreAppModule
+ * @module CoreAppModule
  */
 @Module({
   imports: [GracefulShutdownModule],

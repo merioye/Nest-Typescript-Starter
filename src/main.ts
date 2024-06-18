@@ -5,12 +5,12 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { buildSwaggerConfig } from './config';
+import { buildSwaggerConfig, loggerModuleOptions } from './config';
 import { CONFIG } from './constants';
 import { WinstonLogger } from './modules/common/logger';
-import { GracefulShutdownService } from './modules/core/gracefulShutdown';
+import { GracefulShutdownService } from './modules/core/graceful-shutdown';
 
-const logger = WinstonLogger.getInstance();
+const logger = WinstonLogger.getInstance(loggerModuleOptions);
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
