@@ -1,73 +1,149 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# NestJS TypeScript Template
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Project Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This is a production-ready template for developing applications using NestJS and TypeScript. It includes a comprehensive setup with various tools and configurations to streamline the development process.
 
-## Description
+## Table of Contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Setup Instructions](#setup-instructions)
+- [Development Workflow](#development-workflow)
+- [Scripts](#scripts)
+- [Linting and Formatting](#linting-and-formatting)
+- [Testing](#testing)
+- [Environment Configuration](#environment-configuration)
+- [License](#license)
 
-## Installation
+## Features
+
+- NestJS Framework
+- TypeScript for static type checking
+- Swagger for API documentation
+- Jest for testing
+- ESLint and Prettier for code quality and formatting
+- Nestjs-18n for localization
+- PM2 for process management
+
+## Technologies Used
+
+- **NestJS**: A progressive Node.js framework for building efficient, reliable, and scalable server-side applications.
+- **TypeScript**: A strongly typed programming language that builds on JavaScript.
+- **Swagger**: A tool for documenting RESTful APIs.
+- **Jest**: A delightful JavaScript testing framework.
+- **ESLint**: A pluggable and configurable linter tool for identifying and reporting on patterns in JavaScript.
+- **Prettier**: An opinionated code formatter.
+- **Nestjs-i18n**: Internationalization framework for Nestjs
+- **PM2**: A production process manager for Node.js applications.
+
+## Setup Instructions
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/merioye/Nest-Typescript-Template.git
+   cd nest-typescript-template
+   ```
+
+2. **Install Dependencies**
+   Make sure you have Node.js (>=20) installed. Then run:
+
+   ```bash
+   npm install
+   ```
+
+3. **Environment Configuration**
+   Create `.env.development`, `.env.test`, `.env.production` files in the root directory and copy environment variables from `.env.example` file and configure their values according to the environment. For example in `.env.development`:
+
+   ```env
+   NODE_ENV=development
+   DATABASE_URL=your_development_database_url
+   ```
+
+4. **Start the Application**
+   ```bash
+   npm run start:dev
+   ```
+
+## Development Workflow
+
+- **Build the Project**
+
+  ```bash
+  npm run build
+  ```
+
+- **Start the Development Server**
+
+  ```bash
+  npm run start:dev
+  ```
+
+- **Start the Production Server**
+
+  ```bash
+  npm run start:prod
+  ```
+
+- **Run Tests**
+  ```bash
+  npm test
+  ```
+
+## Scripts
+
+- `npm run prebuild`: Prebuild script.
+- `npm run build`: Build the project.
+- `npm run start`: Start the application in development mode.
+- `npm run start:dev`: Start the application in watch mode for development.
+- `npm run start:debug`: Start the application in debug mode.
+- `npm run start:prod`: Start the application in production mode using PM2.
+- `npm run lint`: Lint the codebase.
+- `npm run lint:fix`: Fix linting errors.
+- `npm run format:check`: Check code formatting.
+- `npm run format:fix`: Fix code formatting.
+- `npm run test`: Run all tests.
+- `npm run test:watch`: Run tests in watch mode.
+- `npm run test:e2e`: Run end-to-end tests.
+- `npm run clean`: Clean the project.
+
+## Linting and Formatting
+
+This project uses ESLint for linting and Prettier for code formatting. Ensure your code follows the defined standards by running:
 
 ```bash
-$ npm install
+npm run lint
+npm run format:check
 ```
 
-## Running the app
+You can automatically fix issues with:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run lint:fix
+npm run format:fix
 ```
 
-## Test
+## Testing
+
+This project uses Jest for unit and end-to-end testing. You can run the tests with the following commands:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run test
+npm run test:watch
+npm run test:e2e
 ```
 
-## Support
+## Environment Configuration
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Ensure you have a env files with all necessary environment variables set up. Example:
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+NODE_ENV=development
+DATABASE_URL=your_database_url
+```
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the UNLICENSED license.
+Created by Umair Saleem.
