@@ -4,7 +4,7 @@
 
 This is a production-ready template for developing applications using NestJS and TypeScript. It includes a comprehensive setup with various tools and configurations to streamline the development process.
 
-## Table of Contents
+## 📖 Table of Contents
 
 - [Features](#features)
 - [Technologies Used](#technologies-used)
@@ -16,7 +16,7 @@ This is a production-ready template for developing applications using NestJS and
 - [Environment Configuration](#environment-configuration)
 - [License](#license)
 
-## Features
+## 📋 Features
 
 - NestJS Framework
 - TypeScript for static type checking
@@ -26,7 +26,7 @@ This is a production-ready template for developing applications using NestJS and
 - Nestjs-18n for localization
 - PM2 for process management
 
-## Technologies Used
+## ❇️ Technologies Used
 
 - **NestJS**: A progressive Node.js framework for building efficient, reliable, and scalable server-side applications.
 - **TypeScript**: A strongly typed programming language that builds on JavaScript.
@@ -37,7 +37,7 @@ This is a production-ready template for developing applications using NestJS and
 - **Nestjs-i18n**: Internationalization framework for Nestjs
 - **PM2**: A production process manager for Node.js applications.
 
-## Setup Instructions
+## ⚙️ Setup Instructions
 
 1. **Clone the Repository**
 
@@ -66,7 +66,7 @@ This is a production-ready template for developing applications using NestJS and
    npm run start:dev
    ```
 
-## Development Workflow
+## 🖇️ Development Workflow
 
 - **Build the Project**
 
@@ -91,7 +91,7 @@ This is a production-ready template for developing applications using NestJS and
   npm test
   ```
 
-## Scripts
+## 📝 Scripts
 
 - `npm run prebuild`: Prebuild script.
 - `npm run build`: Build the project.
@@ -108,7 +108,7 @@ This is a production-ready template for developing applications using NestJS and
 - `npm run test:e2e`: Run end-to-end tests.
 - `npm run clean`: Clean the project.
 
-## Linting and Formatting
+## 🔖 Linting and Formatting
 
 This project uses ESLint for linting and Prettier for code formatting. Ensure your code follows the defined standards by running:
 
@@ -124,7 +124,7 @@ npm run lint:fix
 npm run format:fix
 ```
 
-## Testing
+## 🧪 Testing
 
 This project uses Jest for unit and end-to-end testing. You can run the tests with the following commands:
 
@@ -134,7 +134,7 @@ npm run test:watch
 npm run test:e2e
 ```
 
-## Environment Configuration
+## 🛠️ Environment Configuration
 
 Ensure you have a env files with all necessary environment variables set up. Example:
 
@@ -143,7 +143,7 @@ NODE_ENV=development
 DATABASE_URL=your_database_url
 ```
 
-## License
+## 🗎 License
 
-This project is licensed under the UNLICENSED license.
+This project is licensed under the MIT license.
 Created by Umair Saleem.

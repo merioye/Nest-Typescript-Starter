@@ -4,7 +4,7 @@
   "description": "Production ready nest + typescript template",
   "author": "Umair Saleem",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "prebuild": "node scripts/prebuild.mjs",
     "build": "nest build",
