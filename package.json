@@ -29,6 +29,10 @@
     "test:e2e:ci": "jest --config jest.e2e.config.js --ci --passWithNoTests",
     "test:cov": "jest --coverage --passWithNoTests",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand --passWithNoTests",
+    "docker:dev:up": "docker-compose -f docker-compose.dev.yaml up",
+    "docker:dev:down": "docker-compose -f docker-compose.dev.yaml down",
+    "docker:prod:up": "docker-compose -f docker-compose.prod.yaml up",
+    "docker:prod:down": "docker-compose -f docker-compose.prod.yaml down",
     "prepare": "husky install",
     "clean": "node scripts/clean.mjs"
   },

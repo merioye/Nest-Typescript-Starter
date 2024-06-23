@@ -25,6 +25,7 @@ This is a production-ready template for developing applications using NestJS and
 - ESLint and Prettier for code quality and formatting
 - Nestjs-18n for localization
 - PM2 for process management
+- Docker to containerize the application
 
 ## ❇️ Technologies Used
 
@@ -36,6 +37,7 @@ This is a production-ready template for developing applications using NestJS and
 - **Prettier**: An opinionated code formatter.
 - **Nestjs-i18n**: Internationalization framework for Nestjs
 - **PM2**: A production process manager for Node.js applications.
+- **Docker**: A platform designed to help developers build, share, and run container applications.
 
 ## ⚙️ Setup Instructions
 
@@ -106,6 +108,10 @@ This is a production-ready template for developing applications using NestJS and
 - `npm run test`: Run all tests.
 - `npm run test:watch`: Run tests in watch mode.
 - `npm run test:e2e`: Run end-to-end tests.
+- `npm run docker:dev:up`: Create docker containers for services specified in `docker-compose.dev.yaml` for development environment.
+- `npm run docker:dev:down`: Remove running docker containers for services specified in `docker-compose.dev.yaml` file.
+- `npm run docker:prod:up`: Create docker containers for services specified in `docker-compose.prod.yaml` for production environment.
+- `npm run docker:prod:down`: Remove running docker containers for services specified in `docker-compose.prod.yaml` file.
 - `npm run clean`: Clean the project.
 
 ## 🔖 Linting and Formatting
