@@ -1,265 +1,139 @@
-// import { PartialDeep } from 'type-fest';
-// import { PropertyOf } from 'type-fest/source/get';
+// /* eslint-disable @typescript-eslint/no-unsafe-return */
+// /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+// /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // import {
-//   And,
-//   Any,
-//   ArrayContains,
-//   Between,
-//   Equal,
-//   FindOneOptions,
+//   FindOptionsOrder,
+//   FindOptionsRelations,
+//   FindOptionsSelect,
 //   FindOptionsWhere,
-//   ILike,
-//   In,
-//   IsNull,
-//   LessThan,
-//   LessThanOrEqual,
-//   Like,
-//   MoreThan,
-//   MoreThanOrEqual,
-//   Not,
-//   ObjectLiteral,
-//   Or,
 //   Repository,
+//   FindOneOptions as TypeORMFindOneOptions,
+//   Entity as TypeORMEntity,
 // } from 'typeorm';
-// import {
-//   DeleteOptions,
-//   FindManyOptions,
-//   WhereOperators,
-//   FindWhereOptions,
-//   FindOneOptions as IFindOneOptions,
-//   IRepository,
-//   NumericColumnAggregateOptions,
-//   UpdateOptions,
-//   UpsertOptions,
-// } from './repository.interface';
 // import { FIND_OPERATOR } from './constants';
+// import {
+//   FindOneOptions,
+//   FindWhereOptions,
+//   IRepository,
+//   RelationsOptions,
+//   SelectOptions,
+//   WhereOperators,
+// } from './repository.interface';
 
-// /**
-//  * Represents a TypeORM repository that implements the IRepository interface.
-//  *
-//  * @template Entity - The entity type that the repository operates on.
-//  */
 // export class TypeORMRepository<Entity> implements IRepository<Entity> {
-//   public constructor(private readonly repository: Repository<Entity extends ObjectLiteral>) {}
-//   public async findOne(
-//     options: IFindOneOptions<Entity> = {}
-//   ): Promise<Entity | null> {
-//     const findOptions: FindOneOptions<Entity> = {
-//       where: this.wherify(options.where),
-//       order: undefined,
-//       select: options.select || undefined,
-//       relations: options.relations || undefined,
-//       withDeleted: options.withDeleted || false,
-//       transaction: options.transaction || false,
-//     };
+//   public constructor(private repository: Repository<Entity extends TypeORMEntity>) {}
 
-//     if (options) {
-//       findOptions.select = options.select;
-//       findOptions.relations = options.relations;
-//       findOptions.order = options.order;
+//   async findOne(options?: FindOneOptions<Entity>): Promise<Entity | null> {
+//     const typeormOptions: TypeORMFindOneOptions<Entity> = {};
+
+//     if (options?.where) {
+//       typeormOptions.where = this.convertWhereToTypeORM(options.where);
 //     }
 
-//     const result = await this.repository.findOne(findOptions);
+//     if (options?.select) {
+//       typeormOptions.select = this.convertSelectToTypeORM(options.select);
+//     }
+
+//     if (options?.relations) {
+//       typeormOptions.relations = this.convertRelationsToTypeORM(
+//         options.relations
+//       );
+//     }
+
+//     if (options?.order) {
+//       typeormOptions.order = this.convertOrderToTypeORM(options.order);
+//     }
+
+//     const result = await this.repository.findOne(typeormOptions);
 //     return result || null;
 //   }
-//   public findMany(
-//     options?: FindManyOptions<Entity> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public findOneOrFail(
-//     options?: FindOneOptions<Entity> | undefined
-//   ): Promise<Entity> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public findByIds(
-//     ids: PropertyOf<Entity, 'id', {}>[],
-//     options?: Omit<FindManyOptions<Entity>, 'where'> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public findById(
-//     id: PropertyOf<Entity, 'id', {}>,
-//     options?: FindOneOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public insertOne(record: PartialDeep<Entity, {}>): Promise<Entity> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public insertMany(records: PartialDeep<Entity, {}>[]): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public updateOne(
-//     options?: UpdateOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public updateMany(
-//     options?: UpdateOptions<Entity> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public upsert(options: UpsertOptions<Entity>): Promise<Entity> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public deleteOne(
-//     options?: DeleteOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public deleteMany(
-//     options?: DeleteOptions<Entity> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public softDeleteOne(
-//     options?: DeleteOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public softDeleteMany(
-//     options?: DeleteOptions<Entity> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public count(options?: FindManyOptions<Entity> | undefined): Promise<number> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public sum(
-//     options: NumericColumnAggregateOptions<Entity>
-//   ): Promise<number | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public average(
-//     options: NumericColumnAggregateOptions<Entity>
-//   ): Promise<number | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public minimum(
-//     options: NumericColumnAggregateOptions<Entity>
-//   ): Promise<number | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public maximum(
-//     options: NumericColumnAggregateOptions<Entity>
-//   ): Promise<number | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public increment(
-//     options: NumericColumnAggregateOptions<Entity> & { value: number }
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public decrement(
-//     options: NumericColumnAggregateOptions<Entity> & { value: number }
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public clear(): Promise<void> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public aggregate(options: AggregateOptions<Entity>): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
 
-//   /**
-//    * Executes a transaction in the database.
-//    * The transaction is automatically rolled back if an error occurs,
-//    * otherwise it is committed.
-//    *
-//    * @param {() => Promise<R>} callback - The function to be executed in the transaction.
-//    *                                      This function represents the operations to be
-//    *                                      performed within the transaction. It should
-//    *                                      return a Promise that resolves to the result
-//    *                                      of the transaction.
-//    * @returns {Promise<R>} - A Promise that resolves to the result of the callback function.
-//    *                         If an error occurs within the transaction, the transaction
-//    *                         is rolled back, and the error is re-thrown.
-//    *                         If the transaction is successful, it is committed, and
-//    *                         the Promise returned by the callback function is returned.
-//    */
-//   public async transact<R>(callback: () => Promise<R>): Promise<R> {
-//     const queryRunner = this.repository.queryRunner;
-//     if (!queryRunner)
-//       throw new Error(
-//         'The `queryRunner` is not set. Make sure to set the `queryRunner` before executing a transaction.'
-//       );
-//     if (typeof callback !== 'function')
-//       throw new Error('Callback must be a function');
-//     if (queryRunner.isTransactionActive) return callback();
-
-//     await queryRunner.startTransaction();
-//     try {
-//       const result = await callback();
-//       await queryRunner.commitTransaction();
-//       return result;
-//     } catch (err) {
-//       await queryRunner.rollbackTransaction();
-//       throw err;
-//     } finally {
-//       await queryRunner.release();
-//     }
-//   }
-
-//   private wherify(
-//     options: FindWhereOptions<Entity> | undefined
+//   private convertWhereToTypeORM(
+//     where: FindWhereOptions<Entity>
 //   ): FindOptionsWhere<Entity> {
-//     if (!options) return {};
+//     const typeormWhere: FindOptionsWhere<Entity> = {};
 
-//     const { op, ...filters } = options;
-//     const where: FindOptionsWhere<Entity> = { ...filters };
-
-//     if (op) {
-//       for (const [operator, value] of Object.entries(op)) {
-//         const condition = this.translateWhereOperator(operator as FIND_OPERATOR, value as WhereOperators<Entity>[FIND_OPERATOR]);
-
-//         // where[operator as keyof FindOptionsWhere<Entity>] = condition;
+//     for (const [key, value] of Object.entries(where)) {
+//       if (value && typeof value === 'object' && 'op' in value) {
+//         typeormWhere[key as keyof Entity] = this.convertOperatorToTypeORM(
+//           value.op as WhereOperators<Entity>
+//         );
+//       } else if (value && typeof value === 'object') {
+//         typeormWhere[key] = this.convertWhereToTypeORM(
+//           value as FindWhereOptions<Entity>
+//         );
+//       } else {
+//         typeormWhere[key as keyof Entity] = value;
 //       }
 //     }
 
-//     return where;
+//     return typeormWhere;
 //   }
 
-//   private translateWhereOperator(operator: FIND_OPERATOR, condition: WhereOperators<Entity>[FIND_OPERATOR]) {
-//     if(!condition) return;
+//   private convertOperatorToTypeORM(operator: WhereOperators<Entity>): any {
+//     const typeormOp: any = {};
 
-//     const keys = Object.keys(condition);
-//     const values = Object.values(condition);
-//     switch(operator){
+//     for (const [op, value] of Object.entries(operator)) {
+//       switch (op) {
 //         case FIND_OPERATOR.LT:
-//             return { [keys[0]]: LessThan(values[0]) };
+//           typeormOp.lessThan = value;
+//           break;
 //         case FIND_OPERATOR.GT:
-//             return {[keys[0]]: MoreThan(values[0])};
+//           typeormOp.moreThan = value;
+//           break;
 //         case FIND_OPERATOR.LTE:
-//             return {[keys[0]]: LessThanOrEqual(values[0])};
+//           typeormOp.lessThanOrEqual = value;
+//           break;
 //         case FIND_OPERATOR.GTE:
-//             return {[keys[0]]: MoreThanOrEqual(values[0])};
-//         case FIND_OPERATOR.AND:
-//             return condition;
-//         case FIND_OPERATOR.OR:
-
-//         case FIND_OPERATOR.ISNULL:
-//         case FIND_OPERATOR.ARRAY_CONTAINS:
-//         case FIND_OPERATOR.SIZE:
-//         case FIND_OPERATOR.STARTSWITH:
-//         case FIND_OPERATOR.ENDSWITH:
-//         case FIND_OPERATOR.SUBSTRING:
-//         case FIND_OPERATOR.MATCH:
-//         case FIND_OPERATOR.ANY:
+//           typeormOp.moreThanOrEqual = value;
+//           break;
 //         case FIND_OPERATOR.NE:
+//           typeormOp.not = value;
+//           break;
 //         case FIND_OPERATOR.IN:
+//           typeormOp.in = value;
+//           break;
 //         case FIND_OPERATOR.NIN:
+//           typeormOp.not = { in: value };
+//           break;
 //         case FIND_OPERATOR.LIKE:
+//           typeormOp.like = value;
+//           break;
 //         case FIND_OPERATOR.ILIKE:
+//           typeormOp.ilike = value;
+//           break;
 //         case FIND_OPERATOR.BETWEEN:
-//         case FIND_OPERATOR.NOT_BETWEEN:
-//         case FIND_OPERATOR.NOT_STARTSWITH:
-//         case FIND_OPERATOR.NOT_ENDSWITH:
-//         default:
-//             throw new Error('Invalid operator');
+//           typeormOp.between = value;
+//           break;
+//         case FIND_OPERATOR.ISNULL:
+//           typeormOp.isNull = true;
+//           break;
+//         // Add more operators as needed
+//       }
 //     }
 
-//     return operators[operator] || operator;
+//     return typeormOp;
+//   }
+
+//   private convertSelectToTypeORM(
+//     select: SelectOptions<Entity>
+//   ): FindOptionsSelect<Entity> {
+//     if (Array.isArray(select)) {
+//       return select.reduce((acc, field) => {
+//         acc[field] = true;
+//         return acc;
+//       }, {} as FindOptionsSelect<Entity>);
+//     }
+//     return select as FindOptionsSelect<Entity>;
+//   }
+
+//   private convertRelationsToTypeORM(
+//     relations: RelationsOptions<Entity>
+//   ): FindOptionsRelations<Entity> {
+//     return this.flattenRelations(relations);
+//   }
+
+//   private convertOrderToTypeORM(order: any): FindOptionsOrder<Entity> {
+//     return order as FindOptionsOrder<Entity>;
 //   }
 // }

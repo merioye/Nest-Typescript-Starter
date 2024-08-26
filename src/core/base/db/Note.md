@@ -1,6 +1,6 @@
 ## Note: Multiple ORM Support (Demonstration Only)
 
-This project demonstrates the ease of switching between different Object-Relational Mappers (ORMs) using a template structure. Four repositories are included, each configured with a separate ORM.
+This project demonstrates the ease of switching between different Object-Relational Mappers (ORMs) using a template structure. Five popular ORM repositories are included, each configured with a separate ORM.
 
 **Important Note:**
 

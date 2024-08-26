@@ -1,124 +1,131 @@
-// import { Model } from 'sequelize';
-// import { PartialDeep } from 'type-fest';
-// import { PropertyOf } from 'type-fest/source/get';
+// /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// import { FindOptions, Model, ModelStatic } from 'sequelize';
+// import { FIND_OPERATOR } from './constants';
 // import {
-//   DeleteOptions,
-//   FindManyOptions,
 //   FindOneOptions,
+//   FindWhereOptions,
 //   IRepository,
-//   NumericColumnAggregateOptions,
-//   UpdateOptions,
-//   UpsertOptions,
+//   WhereOperators,
 // } from './repository.interface';
 
-// export class SequelizeRepository<Entity> implements IRepository<Entity> {
-//   public constructor(private readonly repository: Model<Entity>) {}
-//   public findOne(
-//     options?: FindOneOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
+// export class SequelizeRepository<Entity extends Model>
+//   implements IRepository<Entity>
+// {
+//   public constructor(private model: ModelStatic<Entity>) {}
+
+//   async findOne(options?: FindOneOptions<Entity>): Promise<Entity | null> {
+//     const sequelizeOptions: FindOptions<Entity> = {};
+
+//     if (options?.where) {
+//       sequelizeOptions.where = this.convertWhereToSequelize(options.where);
+//     }
+
+//     if (options?.select) {
+//       sequelizeOptions.attributes = this.convertSelectToSequelize(
+//         options.select
+//       );
+//     }
+
+//     if (options?.relations) {
+//       sequelizeOptions.include = this.convertRelationsToSequelize(
+//         options.relations
+//       );
+//     }
+
+//     if (options?.order) {
+//       sequelizeOptions.order = this.convertOrderToSequelize(options.order);
+//     }
+
+//     const result = await this.model.findOne(sequelizeOptions);
+//     return result ? (result.get({ plain: true }) as Entity) : null;
 //   }
-//   public findMany(
-//     options?: FindManyOptions<Entity> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
+
+//   private convertWhereToSequelize(where: FindWhereOptions<Entity>): any {
+//     const sequelizeWhere: any = {};
+
+//     for (const [key, value] of Object.entries(where)) {
+//       if (value && typeof value === 'object' && 'op' in value) {
+//         sequelizeWhere[key] = this.convertOperatorToSequelize(
+//           value.op as WhereOperators<Entity>
+//         );
+//       } else if (value && typeof value === 'object') {
+//         sequelizeWhere[key] = this.convertWhereToSequelize(
+//           value as FindWhereOptions<Entity>
+//         );
+//       } else {
+//         sequelizeWhere[key] = value;
+//       }
+//     }
+
+//     return sequelizeWhere;
 //   }
-//   public findOneOrFail(
-//     options?: FindOneOptions<Entity> | undefined
-//   ): Promise<Entity> {
-//     throw new Error('Method not implemented.');
+
+//   private convertOperatorToSequelize(operator: WhereOperators<Entity>): any {
+//     const sequelizeOp: any = {};
+
+//     for (const [op, value] of Object.entries(operator)) {
+//       switch (op) {
+//         case FIND_OPERATOR.LT:
+//           sequelizeOp[Op.lt] = value;
+//           break;
+//         case FIND_OPERATOR.GT:
+//           sequelizeOp[Op.gt] = value;
+//           break;
+//         case FIND_OPERATOR.LTE:
+//           sequelizeOp[Op.lte] = value;
+//           break;
+//         case FIND_OPERATOR.GTE:
+//           sequelizeOp[Op.gte] = value;
+//           break;
+//         case FIND_OPERATOR.NE:
+//           sequelizeOp[Op.ne] = value;
+//           break;
+//         case FIND_OPERATOR.IN:
+//           sequelizeOp[Op.in] = value;
+//           break;
+//         case FIND_OPERATOR.NIN:
+//           sequelizeOp[Op.notIn] = value;
+//           break;
+//         case FIND_OPERATOR.LIKE:
+//           sequelizeOp[Op.like] = value;
+//           break;
+//         case FIND_OPERATOR.ILIKE:
+//           sequelizeOp[Op.iLike] = value;
+//           break;
+//         case FIND_OPERATOR.BETWEEN:
+//           sequelizeOp[Op.between] = value;
+//           break;
+//         case FIND_OPERATOR.ISNULL:
+//           sequelizeOp[Op.is] = null;
+//           break;
+//         case FIND_OPERATOR.ANY:
+//           sequelizeOp[Op.any] = value;
+//           break;
+//         // Add more operators as needed
+//       }
+//     }
+
+//     return sequelizeOp;
 //   }
-//   public findByIds(
-//     ids: PropertyOf<Entity, 'id', {}>[],
-//     options?: Omit<FindManyOptions<Entity>, 'where'> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
+
+//   private convertSelectToSequelize(select: any): string[] {
+//     return Array.isArray(select) ? select : Object.keys(select);
 //   }
-//   public findById(
-//     id: PropertyOf<Entity, 'id', {}>,
-//     options?: FindOneOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
+
+//   private convertRelationsToSequelize(relations: any): any[] {
+//     return Object.entries(relations).map(([key, value]) => {
+//       const include: any = { association: key };
+//       if (typeof value === 'object' && !Array.isArray(value)) {
+//         include.include = this.convertRelationsToSequelize(value);
+//       }
+//       return include;
+//     });
 //   }
-//   public insertOne(record: PartialDeep<Entity, {}>): Promise<Entity> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public insertMany(records: PartialDeep<Entity, {}>[]): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public updateOne(
-//     options?: UpdateOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public updateMany(
-//     options?: UpdateOptions<Entity> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public upsert(options: UpsertOptions<Entity>): Promise<Entity> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public deleteOne(
-//     options?: DeleteOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public deleteMany(
-//     options?: DeleteOptions<Entity> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public softDeleteOne(
-//     options?: DeleteOptions<Entity> | undefined
-//   ): Promise<Entity | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public softDeleteMany(
-//     options?: DeleteOptions<Entity> | undefined
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public count(options?: FindManyOptions<Entity> | undefined): Promise<number> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public sum(
-//     options: NumericColumnAggregateOptions<Entity>
-//   ): Promise<number | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public average(
-//     options: NumericColumnAggregateOptions<Entity>
-//   ): Promise<number | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public minimum(
-//     options: NumericColumnAggregateOptions<Entity>
-//   ): Promise<number | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public maximum(
-//     options: NumericColumnAggregateOptions<Entity>
-//   ): Promise<number | null> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public increment(
-//     options: NumericColumnAggregateOptions<Entity> & { value: number }
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public decrement(
-//     options: NumericColumnAggregateOptions<Entity> & { value: number }
-//   ): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public clear(): Promise<void> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public aggregate(options: AggregateOptions<Entity>): Promise<Entity[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public transact(callback: () => Promise<unknown>): Promise<Promise<unknown>> {
-//     throw new Error('Method not implemented.');
+
+//   private convertOrderToSequelize(order: any): any[] {
+//     return Object.entries(order).map(([key, value]) => [
+//       key,
+//       value.toUpperCase(),
+//     ]);
 //   }
 // }
