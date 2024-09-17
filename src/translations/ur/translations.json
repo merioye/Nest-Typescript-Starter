@@ -12,6 +12,7 @@
       "Not_Authorized": "اجازت نہیں",
       "Not_Found": "نہیں ملا",
       "Validation_Failed": "توثیق ناکام استثناء",
+      "Database": "ڈیٹا بیس استثناء",
       "Invalid_value": "غیر درست قیمت",
       "invalid_boolean": "درست بولین نہیں ہے {field}",
       "invalid_int": "درست عدد نہیں ہے {field}",

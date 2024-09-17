@@ -12,6 +12,7 @@
       "Not_Authorized": "Nicht autorisiert",
       "Not_Found": "Nicht gefunden",
       "Validation_Failed": "Validierungsfehler-Ausnahme",
+      "Database": "Datenbankausnahme",
       "Invalid_value": "Ungültiger Wert",
       "invalid_boolean": "{field} ist kein gültiger Boolean",
       "invalid_int": "{field} ist keine gültige Ganzzahl",

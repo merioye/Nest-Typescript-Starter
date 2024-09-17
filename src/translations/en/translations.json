@@ -12,6 +12,7 @@
       "Not_Authorized": "Not Authorized",
       "Not_Found": "Not Found",
       "Validation_Failed": "Validation Failed Exception",
+      "Database": "Database Exception",
       "Invalid_value": "Invalid value",
       "invalid_boolean": "{field} is not a valid boolean",
       "invalid_int": "{field} is not a valid integer",
