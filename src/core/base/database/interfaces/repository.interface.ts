@@ -1,5 +1,5 @@
 import { PartialDeep } from 'type-fest';
-import { ITransaction } from '../interfaces';
+import { ITransaction } from '.';
 import {
   AggregateOptions,
   DeleteOptions,

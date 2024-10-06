@@ -34,7 +34,13 @@
     "docker:prod:up": "docker-compose -f docker-compose.prod.yaml up",
     "docker:prod:down": "docker-compose -f docker-compose.prod.yaml down",
     "prepare": "husky install",
-    "clean": "node scripts/clean.mjs"
+    "clean": "node scripts/clean.mjs",
+    "db:client:generate:prisma": "dotenv -e .env.development cross-var -- prisma generate --schema=$PRISMA_SCHEMA_PATH",
+    "db:migrate:generate:prisma": "dotenv -e .env.development cross-var -- prisma migrate dev --create-only --migrations-dir $PRISMA_MIGRATIONS_DIR --schema=$PRISMA_SCHEMA_PATH",
+    "db:migrate:run:dev:prisma": "dotenv -e .env.development cross-var -- prisma migrate dev --migrations-dir $PRISMA_MIGRATIONS_DIR --schema=$PRISMA_SCHEMA_PATH",
+    "db:migrate:run:prod:prisma": "dotenv -e .env.production cross-var -- prisma migrate deploy --migrations-dir $PRISMA_MIGRATIONS_DIR --schema=$PRISMA_SCHEMA_PATH",
+    "db:seed:dev:prisma": "ts-node src/database/seeders/prisma/index.ts",
+    "db:seed:prod:prisma": "node dist/database/seeders/prisma/index.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.2.7",
@@ -44,6 +50,8 @@
     "@nestjs/swagger": "^7.1.14",
     "@prisma/client": "^5.13.0",
     "compression": "^1.7.4",
+    "cross-var": "^1.1.0",
+    "dotenv-cli": "^7.4.2",
     "drizzle-orm": "^0.32.0",
     "helmet": "^7.0.0",
     "joi": "^17.11.0",

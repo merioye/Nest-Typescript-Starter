@@ -1,16 +1,30 @@
 version: '3.9'
 services:
-  nest-template-api:
-    build:
-      dockerfile: docker/development/Dockerfile
-      context: .
-    container_name: nest-template-api-dev-con
-    image: nest-template-api:dev
+  # nest-template-api:
+  #   build:
+  #     dockerfile: docker/development/Dockerfile
+  #     context: .
+  #   container_name: nest-template-api-dev-con
+  #   image: nest-template-api:dev
+  #   restart: always
+  #   ports:
+  #     - 8000:8000
+  #   env_file:
+  #     - ./.env.development
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  db:
+    image: postgres:15.6
     restart: always
     ports:
-      - 8000:8000
-    env_file:
-      - ./.env.development
+      - 5431:5432
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=prisma
     volumes:
-      - .:/app
-      - /app/node_modules
+      - db-sample-vol:/var/lib/postgresql/data
+
+volumes:
+  db-sample-vol:

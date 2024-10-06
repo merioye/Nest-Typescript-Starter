@@ -7,10 +7,7 @@ export class PrismaTransaction implements ITransaction {
   private _resolveTransaction: ((value: unknown) => void) | null = null;
   private _rejectTransaction: ((reason?: any) => void) | null = null;
 
-  private constructor(
-    private readonly _prisma: PrismaClient,
-    private readonly _transactionPromise: Promise<unknown>
-  ) {}
+  private constructor(private readonly _transactionPromise: Promise<unknown>) {}
 
   public async commit(): Promise<void> {
     if (this._isCompleted) {
@@ -34,13 +31,6 @@ export class PrismaTransaction implements ITransaction {
     }
   }
 
-  public getClient(): PrismaClient {
-    if (this._isCompleted) {
-      throw new DatabaseError('Transaction has already been completed');
-    }
-    return this._prisma;
-  }
-
   public static start(prisma: PrismaClient): Promise<PrismaTransaction> {
     let resolveTransaction: ((value: unknown) => void) | null = null;
     let rejectTransaction: ((reason?: any) => void) | null = null;
@@ -50,7 +40,7 @@ export class PrismaTransaction implements ITransaction {
       rejectTransaction = reject;
     });
 
-    const transaction = new PrismaTransaction(prisma, transactionPromise);
+    const transaction = new PrismaTransaction(transactionPromise);
     transaction._resolveTransaction = resolveTransaction;
     transaction._rejectTransaction = rejectTransaction;
 

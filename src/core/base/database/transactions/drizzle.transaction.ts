@@ -14,10 +14,7 @@ export class DrizzleTransaction implements ITransaction {
   private _resolveTransaction: (() => void) | null = null;
   private _rejectTransaction: ((reason?: any) => void) | null = null;
 
-  private constructor(
-    private _db: AnyDrizzleDatabase,
-    private _transactionPromise: Promise<void>
-  ) {}
+  private constructor(private _transactionPromise: Promise<void>) {}
 
   public async commit(): Promise<void> {
     if (this._isCompleted) {
@@ -41,13 +38,6 @@ export class DrizzleTransaction implements ITransaction {
     }
   }
 
-  public getDatabase(): AnyDrizzleDatabase {
-    if (this._isCompleted) {
-      throw new DatabaseError('Transaction has already been completed');
-    }
-    return this._db;
-  }
-
   public static async start(
     db: AnyDrizzleDatabase
   ): Promise<DrizzleTransaction> {
@@ -59,7 +49,7 @@ export class DrizzleTransaction implements ITransaction {
       rejectTransaction = reject;
     });
 
-    const transaction = new DrizzleTransaction(db, transactionPromise);
+    const transaction = new DrizzleTransaction(transactionPromise);
     transaction._resolveTransaction = resolveTransaction;
     transaction._rejectTransaction = rejectTransaction;
 

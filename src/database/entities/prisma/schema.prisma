@@ -1,0 +1,160 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  username       String    @unique
+  password       String
+  firstName      String?
+  lastName       String?
+  age            Int?
+  isActive       Boolean   @default(true)
+  role           Role      @default(USER)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lastLoginAt    DateTime?
+  profile        Profile?
+  posts          Post[]
+  comments       Comment[]
+  likes          Like[]
+  followers      Follow[]  @relation("Follower")
+  following      Follow[]  @relation("Following")
+  authoredBooks  Book[]    @relation("BookAuthor")
+  purchasedBooks Book[]    @relation("BookPurchaser")
+  tags           Tag[]
+  isDeleted      Boolean   @default(false)
+}
+
+model Profile {
+  id           Int     @id @default(autoincrement())
+  bio          String?
+  website      String?
+  avatarUrl    String?
+  socialLinks  Json?
+  user         User    @relation(fields: [userId], references: [id])
+  userId       Int     @unique
+  address      Address?
+  isDeleted    Boolean @default(false)
+}
+
+model Address {
+  id        Int     @id @default(autoincrement())
+  street    String
+  city      String
+  state     String
+  country   String
+  zipCode   String
+  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId Int     @unique
+  isDeleted Boolean @default(false)
+}
+
+model Post {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String
+  published Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  Int
+  comments  Comment[]
+  likes     Like[]
+  tags      Tag[]
+  category  Category  @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  isDeleted Boolean   @default(false)
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  parent    Comment? @relation("CommentToComment", fields: [parentId], references: [id])
+  parentId  Int?
+  replies   Comment[] @relation("CommentToComment")
+  isDeleted Boolean  @default(false)
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  isDeleted Boolean  @default(false)
+
+  @@unique([userId, postId])
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  followerId  Int
+  following   User     @relation("Following", fields: [followingId], references: [id])
+  followingId Int
+  createdAt   DateTime @default(now())
+  isDeleted   Boolean  @default(false)
+
+  @@unique([followerId, followingId])
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  posts       Post[]
+  parentCategory Category? @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  parentCategoryId Int?
+  subCategories Category[] @relation("CategoryHierarchy")
+  isDeleted   Boolean  @default(false)
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[]
+  users User[]
+  isDeleted Boolean @default(false)
+}
+
+model Book {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  price       Decimal
+  publishDate DateTime
+  author      User     @relation("BookAuthor", fields: [authorId], references: [id])
+  authorId    Int
+  purchasers  User[]   @relation("BookPurchaser")
+  genre       Genre    @relation(fields: [genreId], references: [id])
+  genreId     Int
+  isDeleted   Boolean  @default(false)
+}
+
+model Genre {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  books       Book[]
+  isDeleted   Boolean  @default(false)
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}

@@ -2,6 +2,7 @@
 // ############################### Common Types #################################
 
 import { PartialDeep } from 'type-fest';
+import { Op_Symbol } from '../constants';
 import { FIND_OPERATOR, UPDATE_OPERATOR } from '../enums';
 import { ITransaction } from '../interfaces';
 
@@ -13,7 +14,7 @@ export type FindWhereOptions<Entity> = {
   /**
    * Operators for complex queries (e.g., LT, GT, IN)
    */
-  $op?: WhereOperators<Entity>;
+  [Op_Symbol]?: WhereOperators<Entity>;
 } & {
   /**
    * Properties of the entity to query
@@ -104,6 +105,11 @@ export type FindOneOptions<Entity> = {
    * If true, includes soft-deleted entities in the search
    */
   withDeleted?: boolean;
+  /**
+   * The name of the column to use for soft-deletion
+   * @default 'isDeleted'
+   */
+  softDeleteColumnName?: string;
 } & CommonOptions<Entity>;
 
 /**
@@ -129,7 +135,7 @@ export type UpdateOptions<Entity> = {
    * The data to update
    * Can include update operators for complex updates
    */
-  update: PartialDeep<Entity> & { $op?: UpdateOperators<Entity> };
+  update: PartialDeep<Entity> & { [Op_Symbol]?: UpdateOperators<Entity> };
   /**
    * Conditions to determine which entities to update
    */
@@ -152,6 +158,11 @@ export type DeleteOptions<Entity> = {
    * Additional options for the delete operation
    */
   options?: CommonOptions<Entity>;
+  /**
+   * The name of the column to use for soft-deletion
+   * @default 'isDeleted'
+   */
+  softDeleteColumnName?: string;
 };
 
 /**
@@ -166,6 +177,11 @@ export type RestoreOptions<Entity> = {
    * Conditions to determine which entities to restore
    */
   options?: CommonOptions<Entity>;
+  /**
+   * The name of the column to use for soft-deletion
+   * @default 'isDeleted'
+   */
+  softDeleteColumnName?: string;
 };
 
 /**
@@ -204,7 +220,7 @@ export type UpsertOptions<Entity> = {
   /**
    * The data to use for updating if the entity exists
    */
-  update: PartialDeep<Entity> & { $op?: UpdateOperators<Entity> };
+  update: PartialDeep<Entity> & { [Op_Symbol]?: UpdateOperators<Entity> };
   /**
    * The data to use for creating if the entity doesn't exist
    */
@@ -309,6 +325,11 @@ export type AggregateOptions<Entity> = {
    * Whether to include soft-deleted entities
    */
   withDeleted?: boolean;
+  /**
+   * The name of the column to use for soft-deletion
+   * @default 'isDeleted'
+   */
+  softDeleteColumnName?: string;
   /**
    * The database transaction in which the current operation should be executed
    */
