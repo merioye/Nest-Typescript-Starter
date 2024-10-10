@@ -1,335 +1,250 @@
 // import { PrismaClient } from '@prisma/client';
-// import {
-//   Address,
-//   Book,
-//   Category,
-//   Comment,
-//   Follow,
-//   Genre,
-//   Like,
-//   Post,
-//   Profile,
-//   Role,
-//   Tag,
-//   User,
-// } from '@/types';
+// import { Category, Comment, Post, Tag, User } from '@/types';
 // import { Op_Symbol } from '../../../constants';
 // import { FIND_OPERATOR } from '../../../enums';
-// import { FindOneOptions } from '../../../types';
 // import { PrismaRepository } from '../../prisma.repository';
 
 // describe('PrismaRepository - findOne method', () => {
 //   let prisma: PrismaClient;
 //   let userRepository: PrismaRepository<User>;
+//   let postRepository: PrismaRepository<Post>;
+//   let commentRepository: PrismaRepository<Comment>;
+//   let categoryRepository: PrismaRepository<Category>;
 
 //   beforeAll(async () => {
+//     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 //     prisma = new PrismaClient();
 //     userRepository = new PrismaRepository<User>(prisma, 'user');
+//     postRepository = new PrismaRepository<Post>(prisma, 'post');
+//     commentRepository = new PrismaRepository<Comment>(prisma, 'comment');
+//     categoryRepository = new PrismaRepository<Category>(prisma, 'category');
 
-//     // Setup: Create test data
-//     await prisma.user.createMany({
-//       data: [
-//         {
-//           id: 1,
-//           email: 'user1@example.com',
-//           username: 'user1',
-//           password: 'password1',
-//           age: 25,
-//           isActive: true,
-//           role: 'USER',
-//         },
-//         {
-//           id: 2,
-//           email: 'user2@example.com',
-//           username: 'user2',
-//           password: 'password2',
-//           age: 30,
-//           isActive: false,
-//           role: 'ADMIN',
-//         },
-//         {
-//           id: 3,
-//           email: 'user3@example.com',
-//           username: 'user3',
-//           password: 'password3',
-//           age: 35,
-//           isActive: true,
-//           role: 'MODERATOR',
-//         },
-//       ],
-//     });
-
-//     await prisma.profile.create({
-//       data: {
-//         userId: 1,
-//         bio: 'Test bio',
-//         website: 'https://example.com',
-//         address: {
-//           create: {
-//             street: '123 Test St',
-//             city: 'Test City',
-//             state: 'Test State',
-//             country: 'Test Country',
-//             zipCode: '12345',
-//           },
-//         },
-//       },
-//     });
-
-//     await prisma.post.create({
-//       data: {
-//         title: 'Test Post',
-//         content: 'Test Content',
-//         authorId: 1,
-//         categoryId: 1,
-//         published: true,
-//         comments: {
-//           create: [
-//             { content: 'Test Comment 1', authorId: 2 },
-//             { content: 'Test Comment 2', authorId: 3 },
-//           ],
-//         },
-//         tags: {
-//           create: [{ name: 'TestTag1' }, { name: 'TestTag2' }],
-//         },
-//       },
-//     });
+//     // Seed the database with test data
+//     await seedDatabase();
 //   });
 
 //   afterAll(async () => {
-//     await prisma.comment.deleteMany();
-//     await prisma.post.deleteMany();
-//     await prisma.tag.deleteMany();
-//     await prisma.address.deleteMany();
-//     await prisma.profile.deleteMany();
-//     await prisma.user.deleteMany();
+//     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 //     await prisma.$disconnect();
 //   });
 
 //   it('should find a user by id', async () => {
-//     const result = await userRepository.findOne({ where: { id: 1 } });
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(1);
-//     expect(result?.email).toBe('user1@example.com');
+//     const user = await userRepository.findOne({ where: { id: 1 } });
+//     expect(user).toBeDefined();
+//     expect(user?.id).toBe(1);
 //   });
 
 //   it('should return null when user is not found', async () => {
-//     const result = await userRepository.findOne({ where: { id: 999 } });
-//     expect(result).toBeNull();
+//     const user = await userRepository.findOne({ where: { id: 9999 } });
+//     expect(user).toBeNull();
 //   });
 
-//   it('should find a user using complex where conditions', async () => {
-//     const options: FindOneOptions<any> = {
-//       where: {
-//         [Op_Symbol]: {
-//           [FIND_OPERATOR.AND]: [
-//             { age: { [Op_Symbol]: { [FIND_OPERATOR.GTE]: 30 } } },
-//             { isActive: true },
-//           ],
-//         },
-//       },
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(3);
-//     expect(result?.age).toBe(35);
-//     expect(result?.isActive).toBe(true);
-//   });
-
-//   it('should support nested where conditions', async () => {
-//     const options: FindOneOptions<any> = {
-//       where: {
-//         profile: {
-//           bio: { [Op_Symbol]: { [FIND_OPERATOR.LIKE]: '%Test%' } },
-//         },
-//       },
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(1);
-//   });
-
-//   it('should support select option', async () => {
-//     const options: FindOneOptions<any> = {
+//   it('should find a user with specific fields selected', async () => {
+//     const user = await userRepository.findOne({
 //       where: { id: 1 },
 //       select: ['id', 'email', 'username'],
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result).toHaveProperty('id');
-//     expect(result).toHaveProperty('email');
-//     expect(result).toHaveProperty('username');
-//     expect(result).not.toHaveProperty('password');
-//     expect(result).not.toHaveProperty('age');
+//     });
+//     expect(user).toBeDefined();
+//     expect(Object.keys(user!)).toEqual(['id', 'email', 'username']);
 //   });
 
-//   it('should support nested select option', async () => {
-//     const options: FindOneOptions<any> = {
-//       where: { id: 1 },
-//       select: ['id', 'email', { profile: ['bio', 'website'] }],
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result).toHaveProperty('id');
-//     expect(result).toHaveProperty('email');
-//     expect(result).toHaveProperty('profile');
-//     expect(result?.profile).toHaveProperty('bio');
-//     expect(result?.profile).toHaveProperty('website');
-//     expect(result?.profile).not.toHaveProperty('avatarUrl');
-//   });
-
-//   it('should support relations option', async () => {
-//     const options: FindOneOptions<any> = {
+//   it('should find a user with relations', async () => {
+//     const user = await userRepository.findOne({
 //       where: { id: 1 },
 //       relations: { profile: true, posts: true },
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result).toHaveProperty('profile');
-//     expect(result).toHaveProperty('posts');
-//     expect(Array.isArray(result?.posts)).toBe(true);
+//     });
+//     expect(user).toBeDefined();
+//     expect(user?.profile).toBeDefined();
+//     expect(Array.isArray(user?.posts)).toBe(true);
 //   });
 
-//   it('should support nested relations option', async () => {
-//     const options: FindOneOptions<any> = {
+//   it('should find a user with nested relations', async () => {
+//     const user = await userRepository.findOne({
 //       where: { id: 1 },
-//       relations: {
-//         profile: { address: true },
-//         posts: { comments: true, tags: true },
-//       },
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result?.profile).toHaveProperty('address');
-//     expect(result?.posts[0]).toHaveProperty('comments');
-//     expect(result?.posts[0]).toHaveProperty('tags');
-//     expect(Array.isArray(result?.posts[0].comments)).toBe(true);
-//     expect(Array.isArray(result?.posts[0].tags)).toBe(true);
+//       relations: { profile: { address: true }, posts: { comments: true } },
+//     });
+//     expect(user).toBeDefined();
+//     expect(user?.profile?.address).toBeDefined();
+//     expect(user?.posts?.[0]?.comments).toBeDefined();
 //   });
 
-//   it('should support order option', async () => {
-//     const options: FindOneOptions<any> = {
-//       order: { age: 'desc' },
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(3);
-//     expect(result?.age).toBe(35);
+//   it('should find a user with custom order', async () => {
+//     const user = await userRepository.findOne({
+//       order: { createdAt: 'desc' },
+//     });
+//     expect(user).toBeDefined();
+//     // Verify that this is indeed the most recently created user
 //   });
 
-//   it('should support multiple order criteria', async () => {
-//     const options: FindOneOptions<any> = {
-//       order: { isActive: 'desc', age: 'asc' },
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(1);
-//     expect(result?.isActive).toBe(true);
-//     expect(result?.age).toBe(25);
+//   it('should find a non-deleted user by default', async () => {
+//     const user = await userRepository.findOne({ where: { id: 1 } });
+//     expect(user).toBeDefined();
+//     expect(user?.isDeleted).toBe(false);
 //   });
 
-//   it('should support withDeleted option', async () => {
-//     // First, soft delete a user
-//     await prisma.user.update({ where: { id: 2 }, data: { isDeleted: true } });
-
-//     // Try to find the soft-deleted user without withDeleted option
-//     let result = await userRepository.findOne({ where: { id: 2 } });
-//     expect(result).toBeNull();
-
-//     // Try to find the soft-deleted user with withDeleted option
-//     result = await userRepository.findOne({
+//   it('should find a deleted user when withDeleted is true', async () => {
+//     // Assuming user with id 2 is soft-deleted
+//     const user = await userRepository.findOne({
 //       where: { id: 2 },
 //       withDeleted: true,
 //     });
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(2);
-//     expect(result?.isDeleted).toBe(true);
-
-//     // Restore the user
-//     await prisma.user.update({ where: { id: 2 }, data: { isDeleted: false } });
+//     expect(user).toBeDefined();
+//     expect(user?.isDeleted).toBe(true);
 //   });
 
-//   it('should support custom softDeleteColumnName option', async () => {
-//     // First, soft delete a user using a custom column
-//     await prisma.user.update({ where: { id: 2 }, data: { isActive: false } });
-
-//     // Try to find the soft-deleted user with custom softDeleteColumnName
-//     const result = await userRepository.findOne({
+//   it('should not find a deleted user when withDeleted is false', async () => {
+//     // Assuming user with id 2 is soft-deleted
+//     const user = await userRepository.findOne({
 //       where: { id: 2 },
-//       withDeleted: true,
-//       softDeleteColumnName: 'isActive',
+//       withDeleted: false,
 //     });
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(2);
-//     expect(result?.isActive).toBe(false);
-
-//     // Restore the user
-//     await prisma.user.update({ where: { id: 2 }, data: { isActive: true } });
+//     expect(user).toBeNull();
 //   });
 
-//   it('should throw an error for invalid model name', async () => {
-//     const invalidRepository = new PrismaRepository<any>(prisma, 'invalidModel');
-//     await expect(
-//       invalidRepository.findOne({ where: { id: 1 } })
-//     ).rejects.toThrow('Invalid model name: invalidModel');
-//   });
-
-//   it('should handle empty options', async () => {
-//     const result = await userRepository.findOne();
-//     expect(result).toBeDefined();
-//     expect(result).toHaveProperty('id');
-//   });
-
-//   it('should handle all supported FIND_OPERATOR types', async () => {
-//     const options: FindOneOptions<any> = {
-//       where: {
-//         [Op_Symbol]: {
-//           [FIND_OPERATOR.OR]: [
-//             { age: { [Op_Symbol]: { [FIND_OPERATOR.LT]: 30 } } },
-//             { age: { [Op_Symbol]: { [FIND_OPERATOR.GT]: 30 } } },
-//           ],
-//           [FIND_OPERATOR.AND]: [
-//             { isActive: true },
-//             { role: { [Op_Symbol]: { [FIND_OPERATOR.NE]: 'ADMIN' } } },
-//           ],
-//           [FIND_OPERATOR.NOT]: { username: 'user2' },
-//         },
-//       },
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(3);
-//   });
-
-//   // Add more tests for other FIND_OPERATOR types as needed
-
-//   it('should handle complex nested conditions', async () => {
-//     const options: FindOneOptions<any> = {
+//   it('should find a user with complex where conditions', async () => {
+//     const user = await userRepository.findOne({
 //       where: {
 //         [Op_Symbol]: {
 //           [FIND_OPERATOR.AND]: [
-//             {
-//               [Op_Symbol]: {
-//                 [FIND_OPERATOR.OR]: [
-//                   { age: { [Op_Symbol]: { [FIND_OPERATOR.LTE]: 25 } } },
-//                   { age: { [Op_Symbol]: { [FIND_OPERATOR.GTE]: 35 } } },
-//                 ],
-//               },
-//             },
-//             {
-//               [Op_Symbol]: {
-//                 [FIND_OPERATOR.AND]: [
-//                   { isActive: true },
-//                   { role: { [Op_Symbol]: { [FIND_OPERATOR.NE]: 'ADMIN' } } },
-//                 ],
-//               },
-//             },
+//             { age: { [Op_Symbol]: { [FIND_OPERATOR.GTE]: 18 } } },
+//             { age: { [Op_Symbol]: { [FIND_OPERATOR.LTE]: 30 } } },
 //           ],
 //         },
+//         isActive: true,
 //       },
-//     };
-//     const result = await userRepository.findOne(options);
-//     expect(result).toBeDefined();
-//     expect(result?.id).toBe(3);
+//     });
+//     expect(user).toBeDefined();
+//     expect(user?.age).toBeGreaterThanOrEqual(18);
+//     expect(user?.age).toBeLessThanOrEqual(30);
+//     expect(user?.isActive).toBe(true);
 //   });
+
+//   it('should find a user with nested where conditions', async () => {
+//     const user = await userRepository.findOne({
+//       where: {
+//         profile: {
+//           address: {
+//             city: 'New York',
+//           },
+//         },
+//       },
+//     });
+//     expect(user).toBeDefined();
+//     expect(user?.profile?.address?.city).toBe('New York');
+//   });
+
+//   it('should find a post with tag conditions', async () => {
+//     const post = await postRepository.findOne({
+//       where: {
+//         tags: {
+//           some: {
+//             name: 'technology',
+//           },
+//         },
+//       },
+//       relations: { tags: true },
+//     });
+//     expect(post).toBeDefined();
+//     expect(post?.tags.some((tag) => tag.name === 'technology')).toBe(true);
+//   });
+
+//   it('should find a comment with parent and replies', async () => {
+//     const comment = await commentRepository.findOne({
+//       where: {
+//         parentId: { [Op_Symbol]: { [FIND_OPERATOR.NE]: null } },
+//       },
+//       relations: { parent: true, replies: true },
+//     });
+//     expect(comment).toBeDefined();
+//     expect(comment?.parent).toBeDefined();
+//     expect(Array.isArray(comment?.replies)).toBe(true);
+//   });
+
+//   it('should find a category with subcategories', async () => {
+//     const category = await categoryRepository.findOne({
+//       where: { parentCategoryId: null },
+//       relations: { subCategories: true },
+//     });
+//     expect(category).toBeDefined();
+//     expect(Array.isArray(category?.subCategories)).toBe(true);
+//     expect(category?.subCategories.length).toBeGreaterThan(0);
+//   });
+
+//   it('should find a user with specific social links', async () => {
+//     const user = await userRepository.findOne({
+//       where: {
+//         profile: {
+//           socialLinks: {
+//             path: ['twitter'],
+//             equals: '@johndoe',
+//           },
+//         },
+//       },
+//       relations: { profile: true },
+//     });
+//     expect(user).toBeDefined();
+//     expect(user?.profile?.socialLinks?.twitter).toBe('@johndoe');
+//   });
+
+//   it('should find a post with array contains condition', async () => {
+//     const post = await postRepository.findOne({
+//       where: {
+//         tags: {
+//           [Op_Symbol]: {
+//             [FIND_OPERATOR.ARRAY_CONTAINS]: { name: 'technology' },
+//           },
+//         },
+//       },
+//       relations: { tags: true },
+//     });
+//     expect(post).toBeDefined();
+//     expect(post?.tags.some((tag) => tag.name === 'technology')).toBe(true);
+//   });
+
+//   it('should find a user with case-insensitive like condition', async () => {
+//     const user = await userRepository.findOne({
+//       where: {
+//         email: {
+//           [Op_Symbol]: {
+//             [FIND_OPERATOR.ILIKE]: '%@example.com',
+//           },
+//         },
+//       },
+//     });
+//     expect(user).toBeDefined();
+//     expect(user?.email.toLowerCase()).toContain('@example.com');
+//   });
+
+//   it('should find a post within a date range', async () => {
+//     const startDate = new Date('2023-01-01');
+//     const endDate = new Date('2023-12-31');
+//     const post = await postRepository.findOne({
+//       where: {
+//         createdAt: {
+//           [Op_Symbol]: {
+//             [FIND_OPERATOR.BETWEEN]: [startDate, endDate],
+//           },
+//         },
+//       },
+//     });
+//     expect(post).toBeDefined();
+//     expect(post?.createdAt).toBeGreaterThanOrEqual(startDate);
+//     expect(post?.createdAt).toBeLessThanOrEqual(endDate);
+//   });
+
+//   it('should find a user with a null field', async () => {
+//     const user = await userRepository.findOne({
+//       where: {
+//         lastLoginAt: {
+//           [Op_Symbol]: {
+//             [FIND_OPERATOR.ISNULL]: null,
+//           },
+//         },
+//       },
+//     });
+//     expect(user).toBeDefined();
+//     expect(user?.lastLoginAt).toBeNull();
+//   });
+
+//   // Add more tests for other edge cases and scenarios...
 // });
