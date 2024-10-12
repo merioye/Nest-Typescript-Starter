@@ -6,7 +6,6 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { ApiResponse } from '@/common/utils';
-import { FormatTranslationKey } from '@/core/base/translations';
 import {
   ITranslatorService,
   TranslatorServiceToken,
@@ -19,33 +18,27 @@ import { map } from 'rxjs/operators';
  * message of the response using the provided translator service.
  *
  * @class TranslateMessageInterceptor
- * @extends {FormatTranslationKey}
  * @implements {NestInterceptor}
  **/
 @Injectable()
-export class TranslateMessageInterceptor
-  extends FormatTranslationKey
-  implements NestInterceptor
-{
+export class TranslateMessageInterceptor implements NestInterceptor {
   /**
    * Creates an instance of TranslateMessageInterceptor.
    *
    * @constructor
-   * @param {ITranslatorService} translatorService - The translator service to use for translation.
+   * @param translatorService - The translator service to use for translation.
    */
   public constructor(
     @Inject(TranslatorServiceToken)
-    private readonly translatorService: ITranslatorService
-  ) {
-    super();
-  }
+    private readonly _translatorService: ITranslatorService
+  ) {}
 
   /**
    * Intercepts the response and translates the message.
    *
-   * @param {ExecutionContext} _ - The execution context.
-   * @param {CallHandler} next - The call handler.
-   * @returns {Observable<ApiResponse<any>>} The intercepted response.
+   * @param _ - The execution context.
+   * @param next - The call handler.
+   * @returns The intercepted response.
    */
   public intercept(
     _: ExecutionContext,
@@ -57,13 +50,10 @@ export class TranslateMessageInterceptor
           return response;
         }
 
-        const { message } = response;
-        const translatedResponse = { ...response };
-        if (message) {
-          const { key, args } = this.formatTranslationKey(message);
-          translatedResponse.message = this.translatorService.t(key, args);
-        }
-        return translatedResponse;
+        return {
+          ...response,
+          message: this._translatorService.t(response.message),
+        };
       })
     );
   }

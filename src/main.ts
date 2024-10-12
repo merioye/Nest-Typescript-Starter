@@ -6,7 +6,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { buildSwaggerConfig, loggerModuleOptions } from './config';
-import { CONFIG } from './constants';
+import { CONFIG } from './enums';
 import { WinstonLogger } from './modules/common/logger';
 import { GracefulShutdownService } from './modules/core/graceful-shutdown';
 

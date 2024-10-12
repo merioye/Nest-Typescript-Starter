@@ -8,7 +8,7 @@ import { CustomError } from './custom.error';
  * the default message 'Database Exception' will be used.
  *
  * @class DatabaseError
- * @extends {CustomError}
+ * @extends CustomError
  *
  * @example
  * const error = new DatabaseError('Operation failed');
@@ -19,7 +19,7 @@ export class DatabaseError extends CustomError {
    * If no message is provided, the default message 'Database Exception' is used.
    *
    * @constructor
-   * @param {string} [message='Database Exception'] - The error message.
+   * @param [message='Database Exception'] - The error message.
    */
   public constructor(message = 'common.error.Database') {
     super(message, 'DatabaseException', HttpStatus.INTERNAL_SERVER_ERROR);

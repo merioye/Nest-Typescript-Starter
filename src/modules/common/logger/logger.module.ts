@@ -15,8 +15,8 @@ export class LoggerModule {
    * Creates a dynamic module for the global Logger instance.
    *
    * @static
-   * @param {LoggerModuleOptions} options - The options for the Logger module.
-   * @returns {DynamicModule} The dynamic module for the global Logger instance.
+   * @param options - The options for the Logger module.
+   * @returns The dynamic module for the global Logger instance.
    */
   public static forRoot(options: LoggerModuleOptions): DynamicModule {
     return {

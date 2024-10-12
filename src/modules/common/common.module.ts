@@ -14,8 +14,8 @@ export class CommonAppModule {
    * Configures the CommonAppModule for the application.
    *
    * @static
-   * @param {CommonAppModuleOptions} options - The options for the CommonAppModule.
-   * @returns {DynamicModule} - The DynamicModule for the CommonAppModule.
+   * @param options - The options for the CommonAppModule.
+   * @returns The DynamicModule for the CommonAppModule.
    */
   public static forRoot({
     logger,

@@ -1,11 +1,10 @@
-/**
- * The interface with methods to translate api response messages.
- *
- *
- * @interface ITranslatorService
- *
- * @method t - Returns translation of the specified key.
- */
 export interface ITranslatorService {
-  t(key: string, args?: Record<string, string>): string;
+  /**
+   * Translates the given key using the provided language.
+   *
+   * @param key - The key of the translation to retrieve.
+   * @param lang - Optional. The language to use for the translation.
+   * @returns The translation of the provided key.
+   */
+  t(key: string, lang?: string): string;
 }

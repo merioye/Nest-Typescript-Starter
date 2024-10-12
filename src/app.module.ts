@@ -15,6 +15,7 @@ import {
   validationPipeOptions,
 } from './config';
 import { AllExceptionsFilter } from './core/filters';
+import { ExceptionHandlingStrategyFactory } from './core/filters/factories';
 import { TranslateMessageInterceptor } from './core/interceptors/response';
 import { CommonAppModule } from './modules/common';
 import { CoreAppModule } from './modules/core';
@@ -48,6 +49,7 @@ import { WebAppModule } from './modules/web';
       provide: APP_PIPE,
       useValue: new ValidationPipe(validationPipeOptions),
     },
+    ExceptionHandlingStrategyFactory,
   ],
 })
 export class AppModule implements NestModule {
@@ -55,7 +57,7 @@ export class AppModule implements NestModule {
    * Configures the application middlewares
    * This method is called by NestJS to apply middlewares to the application.
    *
-   * @param {MiddlewareConsumer} consumer - MiddlewareConsumer
+   * @param consumer - MiddlewareConsumer
    * @returns {void}
    */
   public configure(consumer: MiddlewareConsumer): void {

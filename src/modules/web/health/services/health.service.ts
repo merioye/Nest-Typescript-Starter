@@ -18,22 +18,24 @@ export class HealthService implements IHealthService {
    * Creates an instance of HealthService.
    *
    * @constructor
-   * @param {ITranslatorService<Translations>} translatorService - The translator service
+   * @param translatorService - The translator service
    */
   public constructor(
     @Inject(TranslatorServiceToken)
-    private readonly translatorService: ITranslatorService
+    private readonly _translatorService: ITranslatorService
   ) {}
 
   /**
    * Returns the health information about the application.
    *
-   * @returns {Health} The health information about the application.
+   * @returns The health information about the application.
    */
   public health(): Health {
     return {
-      message: 'health.success.Server_is_up_and_running',
-      status: this.translatorService.t('common.success.ok'),
+      message: this._translatorService.t(
+        'health.success.Server_is_up_and_running'
+      ),
+      status: this._translatorService.t('common.success.ok'),
     };
   }
 }

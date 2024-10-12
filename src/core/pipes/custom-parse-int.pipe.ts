@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { RequestValidationError } from '@/common/errors';
 import { ErrorFormat } from '@/types';
+import { TranslationKeySeparator } from '@/constants';
 
 /**
  * Custom Parse Int Pipe
@@ -24,9 +25,9 @@ export class CustomParseIntPipe extends ParseIntPipe implements PipeTransform {
    * If the transformation fails, it throws a RequestValidationError with the
    * corresponding error messages.
    *
-   * @param {string} value - The value to be transformed.
-   * @param {ArgumentMetadata} metadata - The metadata of the input value.
-   * @returns {Promise<number>} - The transformed integer value.
+   * @param value - The value to be transformed.
+   * @param metadata - The metadata of the input value.
+   * @returns The transformed integer value.
    * @throws {RequestValidationError} - If the transformation fails.
    */
   async transform(value: string, metadata: ArgumentMetadata): Promise<number> {
@@ -36,9 +37,11 @@ export class CustomParseIntPipe extends ParseIntPipe implements PipeTransform {
       const { data, type } = metadata;
       const errors: ErrorFormat[] = [
         {
-          message: `common.error.invalid_int_?args=${JSON.stringify({
-            field: data,
-          })}`,
+          message: `common.error.invalid_int${TranslationKeySeparator}${JSON.stringify(
+            {
+              field: data,
+            }
+          )}`,
           field: data || '',
           location: type,
           stack: null,

@@ -15,23 +15,23 @@ export class HealthController {
    * Creates a new HealthController instance.
    *
    * @constructor
-   * @param {ILogger} logger - The logger to be used to log messages.
-   * @param {IHealthService} healthService - The health service which is responsible for
+   * @param logger - The logger to be used to log messages.
+   * @param healthService - The health service which is responsible for
    *   providing the health information.
    */
   public constructor(
-    @Inject(LoggerToken) private readonly logger: ILogger,
-    @Inject(HealthServiceToken) private readonly healthService: IHealthService
+    @Inject(LoggerToken) private readonly _logger: ILogger,
+    @Inject(HealthServiceToken) private readonly _healthService: IHealthService
   ) {}
 
   /**
    * The endpoint which returns the server health information.
    *
-   * @returns {Health} The health information.
+   * @returns The health information.
    */
   @Get('/healthcheck')
   public checkHealth(): Health {
-    this.logger.info('Request for checking server health');
-    return this.healthService.health();
+    this._logger.info('Request for checking server health');
+    return this._healthService.health();
   }
 }

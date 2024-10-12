@@ -25,11 +25,11 @@ export class CustomParseFilePipe
    * Constructor for the CustomParseFilePipe.
    *
    * @constructor
-   * @param {string} fieldName - The name of the field which contains the file(s).
-   * @param {ParseFileOptions} [options] - An optional options object for the file(s) validation.
+   * @param fieldName - The name of the field which contains the file(s).
+   * @param options - An optional options object for the file(s) validation.
    */
   public constructor(
-    private readonly fieldName: string,
+    private readonly _fieldName: string,
     options?: ParseFileOptions
   ) {
     super(options);
@@ -39,8 +39,8 @@ export class CustomParseFilePipe
    * Transforms the input value to a file object with the provided options (validations).
    * If the transformation fails, it throws a RequestValidationError with the corresponding error messages.
    *
-   * @param {Express.Multer.File | Express.Multer.File[]} value - The file(s) to be transformed.
-   * @returns {Promise<Express.Multer.File | Express.Multer.File[]>} - The transformed file(s).
+   * @param value - The file(s) to be transformed.
+   * @returns The transformed file(s).
    * @throws {RequestValidationError} - If the transformation fails.
    */
   async transform(
@@ -53,7 +53,7 @@ export class CustomParseFilePipe
       throw new RequestValidationError([
         {
           message: (err as Error)?.message,
-          field: this.fieldName,
+          field: this._fieldName,
           location: 'body',
           stack: null,
         },

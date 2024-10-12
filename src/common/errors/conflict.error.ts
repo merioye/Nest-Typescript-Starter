@@ -8,7 +8,7 @@ import { CustomError } from './custom.error';
  * the default message 'Conflict Exception' will be used.
  *
  * @class ConflictError
- * @extends {CustomError}
+ * @extends CustomError
  *
  * @example
  * const error = new ConflictError('Email already in use');
@@ -19,7 +19,7 @@ export class ConflictError extends CustomError {
    * If no message is provided, the default message 'Conflict Exception' is used.
    *
    * @constructor
-   * @param {string} [message='Conflict Exception'] - The error message.
+   * @param [message='Conflict Exception'] - The error message.
    */
   public constructor(message = 'common.error.Conflict') {
     super(message, 'ConflictException', HttpStatus.CONFLICT);

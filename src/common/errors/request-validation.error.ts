@@ -7,7 +7,7 @@ import { ErrorFormat } from '@/types';
  * It extends the built-in Error class and adds additional properties.
  *
  * @class RequestValidationError
- * @extends {Error}
+ * @extends Error
  *
  * @example
  * const error = new RequestValidationError(errors);
@@ -17,14 +17,14 @@ export class RequestValidationError extends Error {
   /**
    * The HTTP status code of the error.
    */
-  private readonly statusCode = HttpStatus.BAD_REQUEST;
+  private readonly _statusCode = HttpStatus.BAD_REQUEST;
 
   /**
    * Creates a new RequestValidation instance with the specified
    *    list of validation errors
    *
    * @constructor
-   * @param {ErrorFormat[]} errors The list of validation errors.
+   * @param errors The list of validation errors.
    */
   public constructor(public readonly errors: ErrorFormat[]) {
     super('common.error.Validation_Failed');
@@ -38,6 +38,6 @@ export class RequestValidationError extends Error {
    * @returns The HTTP status code of the error.
    */
   public getStatus(): number {
-    return this.statusCode;
+    return this._statusCode;
   }
 }

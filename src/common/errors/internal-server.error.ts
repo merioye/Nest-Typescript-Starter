@@ -8,7 +8,7 @@ import { CustomError } from './custom.error';
  * the default message 'Internal Server Exception' will be used.
  *
  * @class InternalServerError
- * @extends {CustomError}
+ * @extends CustomError
  *
  * @example
  * const error = new InternalServerError('Something went wrong');
@@ -19,7 +19,7 @@ export class InternalServerError extends CustomError {
    * If no message is provided, the default message 'Internal Server Exception' is used.
    *
    * @constructor
-   * @param {string} message - The error message.
+   * @param message - The error message.
    */
   public constructor(message = 'common.error.Internal_Server') {
     super(message, 'InternalServerException', HttpStatus.INTERNAL_SERVER_ERROR);

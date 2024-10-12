@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { RequestValidationError } from '@/common/errors';
 import { ErrorFormat } from '@/types';
+import { TranslationKeySeparator } from '@/constants';
 
 /**
  * Custom Parse Bool Pipe
@@ -27,9 +28,9 @@ export class CustomParseBoolPipe
    * If the transformation fails, it throws a RequestValidationError with the
    * corresponding error messages.
    *
-   * @param {string | boolean} value - The value to be transformed.
-   * @param {ArgumentMetadata} metadata - The metadata of the input value.
-   * @returns {Promise<boolean>} - The transformed boolean value.
+   * @param value - The value to be transformed.
+   * @param  metadata - The metadata of the input value.
+   * @returns The transformed boolean value.
    * @throws {RequestValidationError} - If the transformation fails.
    */
   async transform(
@@ -42,9 +43,11 @@ export class CustomParseBoolPipe
       const { data, type } = metadata;
       const errors: ErrorFormat[] = [
         {
-          message: `common.error.invalid_boolean_?args=${JSON.stringify({
-            field: data,
-          })}`,
+          message: `common.error.invalid_boolean${TranslationKeySeparator}${JSON.stringify(
+            {
+              field: data,
+            }
+          )}`,
           field: data || '',
           location: type,
           stack: null,

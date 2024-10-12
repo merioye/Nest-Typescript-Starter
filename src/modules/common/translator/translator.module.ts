@@ -7,8 +7,16 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 import { TranslatorModuleOptions } from '@/types';
-import { TranslationsFileNameToken, TranslatorServiceToken } from './constants';
-import { NestI18nTranslatorService } from './services';
+import {
+  TranslationKeyFormatterServiceToken,
+  TranslationKeySeparatorToken,
+  TranslationsFileNameToken,
+  TranslatorServiceToken,
+} from './constants';
+import {
+  NestI18nTranslatorService,
+  TranslationKeyFormatterService,
+} from './services';
 
 /**
  * Global NestJS module for translation
@@ -22,14 +30,15 @@ export class TranslatorModule {
    * Configures the TranslatorModule for the application.
    *
    * @static
-   * @param {TranslatorModuleOptions} options - The options for the TranslatorModule.
-   * @returns {DynamicModule} - The DynamicModule for the TranslatorModule.
+   * @param options - The options for the TranslatorModule.
+   * @returns The DynamicModule for the TranslatorModule.
    */
   public static forRoot({
     fallbackLanguage,
     translationsDirPath,
     translationsFileName,
     langExtractionKey,
+    translationKeySeparator,
   }: TranslatorModuleOptions): DynamicModule {
     return {
       global: true,
@@ -53,6 +62,14 @@ export class TranslatorModule {
         {
           provide: TranslationsFileNameToken,
           useValue: translationsFileName,
+        },
+        {
+          provide: TranslationKeySeparatorToken,
+          useValue: translationKeySeparator,
+        },
+        {
+          provide: TranslationKeyFormatterServiceToken,
+          useClass: TranslationKeyFormatterService,
         },
         {
           provide: TranslatorServiceToken,

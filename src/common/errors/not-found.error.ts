@@ -8,7 +8,7 @@ import { CustomError } from './custom.error';
  * the default message 'Not Found' will be used.
  *
  * @class NotFoundError
- * @extends {CustomError}
+ * @extends CustomError
  *
  * @example
  * const error = new NotFoundError('Resource not found');
@@ -19,7 +19,7 @@ export class NotFoundError extends CustomError {
    * If no message is provided, the default message 'Not Found' is used.
    *
    * @constructor
-   * @param {string} [message='Not Found'] - The error message.
+   * @param [message='Not Found'] - The error message.
    */
   public constructor(message = 'common.error.Not_Found') {
     super(message, 'NotFoundException', HttpStatus.NOT_FOUND);

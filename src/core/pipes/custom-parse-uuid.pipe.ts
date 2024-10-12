@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { RequestValidationError } from '@/common/errors';
 import { ErrorFormat } from '@/types';
+import { TranslationKeySeparator } from '@/constants';
 
 /**
  * Custom Parse UUID Pipe
@@ -27,9 +28,9 @@ export class CustomParseUUIDPipe
    * If the transformation fails, it throws a RequestValidationError with the
    * corresponding error messages.
    *
-   * @param {string} value - The value to be transformed.
-   * @param {ArgumentMetadata} metadata - The metadata of the input value.
-   * @returns {Promise<string>} - The transformed uuid value.
+   * @param value - The value to be transformed.
+   * @param metadata - The metadata of the input value.
+   * @returns The transformed uuid value.
    * @throws {RequestValidationError} - If the transformation fails.
    */
   async transform(value: string, metadata: ArgumentMetadata): Promise<string> {
@@ -39,9 +40,11 @@ export class CustomParseUUIDPipe
       const { data, type } = metadata;
       const errors: ErrorFormat[] = [
         {
-          message: `common.error.invalid_uuid_?args=${JSON.stringify({
-            field: data,
-          })}`,
+          message: `common.error.invalid_uuid${TranslationKeySeparator}${JSON.stringify(
+            {
+              field: data,
+            }
+          )}`,
           field: data || '',
           location: type,
           stack: null,

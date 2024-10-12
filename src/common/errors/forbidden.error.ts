@@ -8,7 +8,7 @@ import { CustomError } from './custom.error';
  * the default message 'Action Forbidden' will be used.
  *
  * @class ForbiddenError
- * @extends {CustomError}
+ * @extends CustomError
  *
  * @example
  * const error = new ForbiddenError('You are not authorized to access this resource');
@@ -19,7 +19,7 @@ export class ForbiddenError extends CustomError {
    * If no message is provided, the default message 'Action Forbidden' is used.
    *
    * @constructor
-   * @param {string} [message='Action Forbidden'] - The error message.
+   * @param [message='Action Forbidden'] - The error message.
    */
   public constructor(message = 'common.error.Action_Forbidden') {
     super(message, 'ForbiddenException', HttpStatus.FORBIDDEN);

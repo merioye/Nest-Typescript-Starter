@@ -8,7 +8,7 @@ import { CustomError } from './custom.error';
  * the default message 'Not Authorized' will be used.
  *
  * @class NotAuthorizedError
- * @extends {CustomError}
+ * @extends CustomError
  *
  * @example
  * const error = new NotAuthorizedError('You are not authorized to access this resource');
@@ -19,7 +19,7 @@ export class NotAuthorizedError extends CustomError {
    * If no message is provided, the default message 'Not Authorized' is used.
    *
    * @constructor
-   * @param {string} [message='Not Authorized'] - The error message.
+   * @param [message='Not Authorized'] - The error message.
    */
   public constructor(message = 'common.error.Not_Authorized') {
     super(message, 'NotAuthorizedException', HttpStatus.UNAUTHORIZED);

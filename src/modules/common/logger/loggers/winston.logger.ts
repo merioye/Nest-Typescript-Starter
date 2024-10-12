@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { ENVIRONMENT } from '@/enums';
 import { createLogger, format, Logger, transports } from 'winston';
 import { LoggerModuleOptions } from '@/types';
-import { ENVIRONMENT } from '@/constants';
 import { ILogger } from '../interfaces';
 
 /**
@@ -17,10 +17,10 @@ import { ILogger } from '../interfaces';
 @Injectable()
 export class WinstonLogger implements ILogger {
   // Singleton logger instance
-  private static instance: WinstonLogger;
+  private static _instance: WinstonLogger;
   // Winston logger
-  private readonly logger: Logger;
-  private readonly customFormat = {
+  private readonly _logger: Logger;
+  private readonly _customFormat = {
     console: format.printf(({ timestamp, level, stack, message }) => {
       return `${timestamp} [${level}]: ${stack || message}`;
     }),
@@ -31,12 +31,12 @@ export class WinstonLogger implements ILogger {
    * It cannot be instantiated outside of the class
    *
    * @constructor
-   * @param {LoggerModuleOptions} options - Logger module options
+   * @param options - Logger module options
    */
   private constructor({ environment, logsDirPath }: LoggerModuleOptions) {
     const isTestingEnvironment = environment === ENVIRONMENT.TEST;
 
-    this.logger = createLogger({
+    this._logger = createLogger({
       level: 'info',
       defaultMeta: {
         application: 'nest + typescript template',
@@ -54,7 +54,7 @@ export class WinstonLogger implements ILogger {
             format.colorize(),
             format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
             format.errors({ stack: true }),
-            this.customFormat.console
+            this._customFormat.console
           ),
         }),
         new transports.File({
@@ -77,20 +77,21 @@ export class WinstonLogger implements ILogger {
    * Get the singleton instance of the logger
    *
    * @static
-   * @returns {WinstonLogger} instance
+   * @param options - logger module options
+   * @returns logger instance
    */
   public static getInstance(options: LoggerModuleOptions): WinstonLogger {
-    if (!WinstonLogger.instance) {
-      WinstonLogger.instance = new WinstonLogger(options);
+    if (!WinstonLogger._instance) {
+      WinstonLogger._instance = new WinstonLogger(options);
     }
-    return WinstonLogger.instance;
+    return WinstonLogger._instance;
   }
 
   /**
    * Format message to string
    *
-   * @param {any} data - Message to format
-   * @returns {string} Formatted message
+   * @param data - Message to format
+   * @returns Formatted message
    */
   private stringify(data: any): string {
     return typeof data === 'string' ? data : JSON.stringify(data);
@@ -99,66 +100,66 @@ export class WinstonLogger implements ILogger {
   /**
    * Logs a message
    *
-   * @param {any} message - Message to log
-   * @param {any[]} optionalParams - Optional parameters
+   * @param message - Message to log
+   * @param optionalParams - Optional parameters
    * @returns {void}
    */
   public log(message: any, ...optionalParams: any[]): void {
-    this.logger.log('info', this.stringify(message), optionalParams);
+    this._logger.log('info', this.stringify(message), optionalParams);
   }
 
   /**
    * Logs an informational message
    *
-   * @param {any} message - Message to log
-   * @param {any[]} optionalParams - Optional parameters
+   * @param message - Message to log
+   * @param optionalParams - Optional parameters
    * @returns {void}
    */
   public info(message: any, ...optionalParams: any[]): void {
-    this.logger.info(this.stringify(message), optionalParams);
+    this._logger.info(this.stringify(message), optionalParams);
   }
 
   /**
    * Logs a debug message
    *
-   * @param {any} message - Message to log
-   * @param {any[]} optionalParams - Optional parameters
+   * @param message - Message to log
+   * @param optionalParams - Optional parameters
    * @returns {void}
    */
   public debug(message: any, ...optionalParams: any[]): void {
-    this.logger.debug(this.stringify(message), optionalParams);
+    this._logger.debug(this.stringify(message), optionalParams);
   }
 
   /**
    * Logs a message at verbose level
    *
-   * @param {any} - Message message to log
-   * @param {any[]} optionalParams - Optional parameters
+   * @param - Message message to log
+   * @param optionalParams - Optional parameters
    * @returns {void}
    */
   public verbose(message: any, ...optionalParams: any[]): void {
-    this.logger.verbose(this.stringify(message), optionalParams);
+    this._logger.verbose(this.stringify(message), optionalParams);
   }
 
   /**
    * Logs an error message
    *
-   * @param {any} message - Message to log
-   * @param {any[]} optionalParams - Optional parameters
+   * @param message - Message to log
+   * @param optionalParams - Optional parameters
    * @returns {void}
    */
   public error(message: any, ...optionalParams: any[]): void {
-    this.logger.error(this.stringify(message), optionalParams);
+    this._logger.error(this.stringify(message), optionalParams);
   }
 
   /**
    * Logs a warning message
    *
-   * @param {any} message - Message to log
-   * @param {any[]} optionalParams - Optional parameters
+   * @param message - Message to log
+   * @param optionalParams - Optional parameters
    * @returns {void}
    */
   public warn(message: any, ...optionalParams: any[]): void {
-    this.logger.warn(this.stringify(message), optionalParams);
+    this._logger.warn(this.stringify(message), optionalParams);
   }
 }

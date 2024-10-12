@@ -1,4 +1,4 @@
-import { ENVIRONMENT } from '@/constants';
+import { ENVIRONMENT } from '@/enums';
 
 /**
  * Type representing an error object.
@@ -43,6 +43,30 @@ type LoggerErrorMetadata = {
 };
 
 /**
+ * Type represents the structure of the exception response body.
+ *
+ * @typedef ExceptionResponseBody
+ *
+ * @property {number} statusCode - The HTTP status code of the error
+ * @property {string} message - The error message
+ * @property {boolean} success - Whether the request was successful
+ * @property {ErrorFormat} errorInfo - The error information
+ * @property {Array<ErrorFormat>} errors - The array of error objects
+ */
+type ExceptionResponseBody = {
+  statusCode: number;
+  message: string;
+  success: false;
+  errorInfo: {
+    ref: string;
+    type: string;
+    path: string;
+    method: string;
+  };
+  errors: Array<ErrorFormat>;
+};
+
+/**
  * Type representing the LoggerModuleOptions.
  *
  * @typedef LoggerModuleOptions
@@ -64,19 +88,22 @@ type LoggerModuleOptions = {
  * @property {string} translationsDirPath - The path to the directory containing the translation files.
  * @property {string} translationsFileName - The name of the file that contains the translations.
  * @property {string} langExtractionKey - The key used to extract the language from the incoming request.
+ * @property {string} translationKeySeparator - The separator used to separate the translation key from the arguments.
  */
 type TranslatorModuleOptions = {
   fallbackLanguage: string;
   translationsDirPath: string;
   translationsFileName: string;
   langExtractionKey: string;
+  translationKeySeparator: string;
 };
 
 export {
   ErrorFormat,
   LoggerErrorMetadata,
+  ExceptionResponseBody,
   LoggerModuleOptions,
   TranslatorModuleOptions,
 };
-export * from './database';
-export * from './api-response';
+export * from './database.types';
+export * from './api-response.types';

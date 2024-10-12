@@ -8,6 +8,7 @@ import { ApiResponseParams, ErrorFormat } from '@/types';
  * if the API call was successful or not, and the status code of the response.
  *
  * @class ApiResponse
+ * @template T - The type of the result of the API call.
  *
  * @example
  * const response = new ApiResponse({ result: { name: 'John Doe' } });
@@ -27,7 +28,7 @@ export class ApiResponse<T> {
    * Creates a new ApiResponse instance with the specified result, message, and status code.
    *
    * @constructor
-   * @param {ApiResponseParams<T>} params - The parameters to use to create the ApiResponse instance.
+   * @param params - The parameters to use to create the ApiResponse instance.
    */
   public constructor({
     result,

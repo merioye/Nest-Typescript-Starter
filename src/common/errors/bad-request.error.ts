@@ -8,7 +8,7 @@ import { CustomError } from './custom.error';
  * the default message 'Bad Request Exception' will be used.
  *
  * @class BadRequestError
- * @extends {CustomError}
+ * @extends CustomError
  *
  * @example
  * const error = new BadRequestError('Invalid input data');
@@ -19,7 +19,7 @@ export class BadRequestError extends CustomError {
    * If no message is provided, the default message 'Conflict Exception' is used.
    *
    * @constructor
-   * @param {string} [message='Bad Request Exception'] - The error message.
+   * @param [message='Bad Request Exception'] - The error message.
    */
   public constructor(message = 'common.error.Bad_Request') {
     super(message, 'BadRequestException', HttpStatus.BAD_REQUEST);

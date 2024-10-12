@@ -26,22 +26,22 @@ export class GracefulShutdownService
   /**
    * The NestJS application instance.
    */
-  private app!: NestExpressApplication;
+  private _app!: NestExpressApplication;
 
   /**
    * @constructor
-   * @param {ILogger} logger - An instance of the logger.
+   * @param logger - An instance of the logger.
    */
   public constructor(@Inject(LoggerToken) private readonly logger: ILogger) {}
 
   /**
    * Sets the NestJS application instance.
    *
-   * @param {NestExpressApplication} app - The NestJS application instance.
+   * @param app - The NestJS application instance.
    * @returns {void}
    */
   public setApp(app: NestExpressApplication): void {
-    this.app = app;
+    this._app = app;
   }
 
   /**
@@ -52,7 +52,7 @@ export class GracefulShutdownService
    * @returns {void}
    */
   public onApplicationBootstrap(): void {
-    if (!this.app) {
+    if (!this._app) {
       throw new Error(
         'You have to invoke `setApp(app)` method of `ShutdownService` in project entrypoint file to handle graceful server shutdown!'
       );
@@ -63,12 +63,12 @@ export class GracefulShutdownService
    * Handles graceful shutdown of the application when a signal is received.
    * This method closes the http server.
    *
-   * @param {string} signal The signal that is received. Default is 'Termination'.
+   * @param signal The signal that is received. Default is 'Termination'.
    * @returns {void}
    */
   public beforeApplicationShutdown(signal: string = 'Termination'): void {
     this.logger.info(`${signal} signal received, closing http server...`);
-    this.app.getHttpServer().close((err) => {
+    this._app.getHttpServer().close((err) => {
       if (err) {
         throw err;
       } else {
