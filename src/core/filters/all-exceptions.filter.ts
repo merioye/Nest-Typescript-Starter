@@ -70,7 +70,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     if (exception instanceof RequestValidationError) {
-      metadata.errors = exception?.errors;
+      metadata.errors = exception?.errors.map((error) => ({
+        ...error,
+        message: this._translatorService.t(error.message, 'en'),
+      }));
     }
 
     const message = this._translatorService.t(exception.message, 'en');

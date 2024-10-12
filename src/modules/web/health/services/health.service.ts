@@ -32,9 +32,7 @@ export class HealthService implements IHealthService {
    */
   public health(): Health {
     return {
-      message: this._translatorService.t(
-        'health.success.Server_is_up_and_running'
-      ),
+      message: 'health.success.Server_is_up_and_running',
       status: this._translatorService.t('common.success.ok'),
     };
   }
