@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { PrismaClient } from '@prisma/client';
+
+import { Role } from '@/types';
 
 export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   // Create Users
-  const user1 = await prisma.user.create({
+  const john = await prisma.user.create({
     data: {
       email: 'john@example.com',
       username: 'john_doe',
@@ -13,11 +12,29 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
       firstName: 'John',
       lastName: 'Doe',
       age: 30,
-      role: 'USER',
+      role: Role.ADMIN,
+      interests: ['coding', 'reading'],
+      profile: {
+        create: {
+          bio: 'Software developer and book enthusiast',
+          website: 'https://johndoe.com',
+          avatarUrl: 'https://example.com/avatar1.jpg',
+          socialLinks: { twitter: '@johndoe', linkedin: 'johndoe' },
+          address: {
+            create: {
+              street: '123 Main St',
+              city: 'New York',
+              state: 'NY',
+              country: 'USA',
+              zipCode: '10001',
+            },
+          },
+        },
+      },
     },
   });
 
-  const user2 = await prisma.user.create({
+  const jane = await prisma.user.create({
     data: {
       email: 'jane@example.com',
       username: 'jane_smith',
@@ -25,48 +42,62 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
       firstName: 'Jane',
       lastName: 'Smith',
       age: 28,
-      role: 'ADMIN',
-    },
-  });
-
-  // Create Profiles
-  await prisma.profile.create({
-    data: {
-      bio: 'Software developer and book enthusiast',
-      website: 'https://johndoe.com',
-      avatarUrl: 'https://example.com/avatar1.jpg',
-      socialLinks: { twitter: '@johndoe', linkedin: 'johndoe' },
-      userId: user1.id,
-      address: {
+      role: Role.ADMIN,
+      interests: ['traveling', 'photography'],
+      profile: {
         create: {
-          street: '123 Main St',
-          city: 'New York',
-          state: 'NY',
-          country: 'USA',
-          zipCode: '10001',
+          bio: 'Marketing specialist and travel lover',
+          website: 'https://janesmith.com',
+          avatarUrl: 'https://example.com/avatar2.jpg',
+          socialLinks: { instagram: '@janesmith', facebook: 'janesmith' },
+          address: {
+            create: {
+              street: '456 Elm St',
+              city: 'Los Angeles',
+              state: 'CA',
+              country: 'USA',
+              zipCode: '90001',
+            },
+          },
         },
       },
     },
   });
 
-  await prisma.profile.create({
-    data: {
-      bio: 'Marketing specialist and travel lover',
-      website: 'https://janesmith.com',
-      avatarUrl: 'https://example.com/avatar2.jpg',
-      socialLinks: { instagram: '@janesmith', facebook: 'janesmith' },
-      userId: user2.id,
-      address: {
-        create: {
-          street: '456 Elm St',
-          city: 'Los Angeles',
-          state: 'CA',
-          country: 'USA',
-          zipCode: '90001',
+  // Create additional users for pagination testing
+  const additionalUsers = [];
+  for (let i = 1; i <= 20; i++) {
+    const user = await prisma.user.create({
+      data: {
+        email: `user${i}@example.com`,
+        username: `user_${i}`,
+        password: `password${i}`,
+        firstName: 'User',
+        lastName: `${i}`,
+        age: 20 + i,
+        role: i % 2 === 0 ? Role.USER : Role.ADMIN,
+        interests: [`interest${i}`, `hobby${i}`],
+        profile: {
+          create: {
+            bio: `Bio for user ${i}`,
+            website: `https://user${i}.com`,
+            avatarUrl: `https://example.com/avatar${i}.jpg`,
+            socialLinks: { twitter: `@user${i}` },
+            address: {
+              create: {
+                street: `${i} Test St`,
+                city: `City ${i}`,
+                state: 'ST',
+                country: 'USA',
+                zipCode: `1000${i}`,
+              },
+            },
+          },
         },
       },
-    },
-  });
+    });
+    additionalUsers.push(user);
+  }
 
   // Create Categories
   const category1 = await prisma.category.create({
@@ -89,7 +120,7 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
       title: 'The Future of AI',
       content: 'Artificial Intelligence is rapidly evolving...',
       published: true,
-      authorId: user1.id,
+      authorId: john.id,
       categoryId: category1.id,
     },
   });
@@ -99,16 +130,33 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
       title: 'My Trip to Paris',
       content: 'Last summer, I had the opportunity to visit Paris...',
       published: true,
-      authorId: user2.id,
+      authorId: jane.id,
       categoryId: category2.id,
     },
   });
+
+  // Create additional posts for some users
+  for (let i = 0; i < 10; i++) {
+    const randomUser =
+      additionalUsers[Math.floor(Math.random() * additionalUsers.length)];
+    if (!randomUser) continue;
+
+    await prisma.post.create({
+      data: {
+        title: `Post ${i + 1} by ${randomUser.username}`,
+        content: `Content for post ${i + 1}...`,
+        published: true,
+        authorId: randomUser.id,
+        categoryId: i % 2 === 0 ? category1.id : category2.id,
+      },
+    });
+  }
 
   // Create Comments
   const comment1 = await prisma.comment.create({
     data: {
       content: 'Great post! Very insightful.',
-      authorId: user2.id,
+      authorId: jane.id,
       postId: post1.id,
     },
   });
@@ -116,7 +164,7 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   await prisma.comment.create({
     data: {
       content: 'Thanks for sharing your experience!',
-      authorId: user1.id,
+      authorId: john.id,
       postId: post2.id,
     },
   });
@@ -124,7 +172,7 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   await prisma.comment.create({
     data: {
       content: 'I agree with your points.',
-      authorId: user2.id,
+      authorId: jane.id,
       postId: post1.id,
       parentId: comment1.id,
     },
@@ -133,14 +181,14 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   // Create Likes
   await prisma.like.create({
     data: {
-      userId: user2.id,
+      userId: jane.id,
       postId: post1.id,
     },
   });
 
   await prisma.like.create({
     data: {
-      userId: user1.id,
+      userId: john.id,
       postId: post2.id,
     },
   });
@@ -148,8 +196,8 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   // Create Follows
   await prisma.follow.create({
     data: {
-      followerId: user2.id,
-      followingId: user1.id,
+      followerId: jane.id,
+      followingId: john.id,
     },
   });
 
@@ -158,7 +206,7 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   //   data: {
   //     name: 'AI',
   //     posts: { connect: { id: post1.id } },
-  //     users: { connect: { id: user1.id } },
+  //     users: { connect: { id: john.id } },
   //   },
   // });
 
@@ -166,7 +214,7 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   //   data: {
   //     name: 'Travel',
   //     posts: { connect: { id: post2.id } },
-  //     users: { connect: { id: user2.id } },
+  //     users: { connect: { id: jane.id } },
   //   },
   // });
 
@@ -192,9 +240,9 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
       description: 'Exploring the future of artificial intelligence',
       price: 29.99,
       publishDate: new Date('2023-01-15'),
-      authorId: user1.id,
+      authorId: john.id,
       genreId: genre1.id,
-      purchasers: { connect: { id: user2.id } },
+      purchasers: { connect: { id: jane.id } },
     },
   });
 
@@ -204,9 +252,39 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
       description: 'Everything you need to know about visiting Paris',
       price: 19.99,
       publishDate: new Date('2023-03-20'),
-      authorId: user2.id,
+      authorId: jane.id,
       genreId: genre2.id,
-      purchasers: { connect: { id: user1.id } },
+      purchasers: { connect: { id: john.id } },
     },
   });
+}
+
+export async function clearDatabase(prisma: PrismaClient): Promise<void> {
+  // First, clear all self-referencing relationships
+  await prisma.comment.updateMany({
+    where: { parentId: { not: null } },
+    data: { parentId: null },
+  });
+
+  // Then clear many-to-many relationships
+  await prisma.$transaction([
+    // Clear junction tables and leaf nodes first
+    prisma.like.deleteMany(),
+    prisma.follow.deleteMany(),
+
+    // Clear entities with foreign keys to other tables
+    prisma.comment.deleteMany(),
+    prisma.post.deleteMany(),
+    prisma.book.deleteMany(),
+    prisma.address.deleteMany(),
+
+    // Clear entities that are referenced by others
+    prisma.category.deleteMany(),
+    prisma.genre.deleteMany(),
+    prisma.tag.deleteMany(),
+    prisma.profile.deleteMany(),
+
+    // Finally, clear the root entities
+    prisma.user.deleteMany(),
+  ]);
 }

@@ -21,6 +21,13 @@ module.exports = {
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   setupFilesAfterEnv: ['./src/test-setup/setup.ts'],
   // The glob patterns Jest uses to detect test files
-  testMatch: ['**/*.spec.{js,ts,jsx,tsx}', '**/*.test.{js,ts,jsx,tsx}'],
+  testMatch: [
+    '**/transaction.spec.{js,ts,jsx,tsx}',
+    '**/*.test.{js,ts,jsx,tsx}',
+  ],
   verbose: true,
+  // Module name mapper for path aliases
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 };

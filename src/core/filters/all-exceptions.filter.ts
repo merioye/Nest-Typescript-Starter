@@ -3,14 +3,16 @@ import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost } from '@nestjs/core';
 import { Request } from 'express';
 import { RequestValidationError } from '@/common/errors';
-import { CONFIG, ENVIRONMENT } from '@/enums';
 import { ILogger, LoggerToken } from '@/modules/common/logger';
 import {
   ITranslatorService,
   TranslatorServiceToken,
 } from '@/modules/common/translator';
 import { v4 as uuidv4 } from 'uuid';
+
 import { LoggerErrorMetadata } from '@/types';
+import { CONFIG, ENVIRONMENT } from '@/enums';
+
 import { ExceptionHandlingStrategyFactory } from './factories';
 
 /**

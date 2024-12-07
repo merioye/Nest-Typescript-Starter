@@ -29,6 +29,7 @@ model User {
   authoredBooks  Book[]    @relation("BookAuthor")
   purchasedBooks Book[]    @relation("BookPurchaser")
   tags           Tag[]
+  interests      String[]  @default([])
   isDeleted      Boolean   @default(false)
 }
 

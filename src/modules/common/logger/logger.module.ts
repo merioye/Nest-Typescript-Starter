@@ -1,5 +1,7 @@
 import { DynamicModule } from '@nestjs/common';
+
 import { LoggerModuleOptions } from '@/types';
+
 import { LoggerToken } from './constants';
 import { WinstonLogger } from './loggers';
 

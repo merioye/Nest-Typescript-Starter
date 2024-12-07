@@ -2,13 +2,14 @@ import { join, resolve } from 'path';
 import { ValidationPipeOptions } from '@nestjs/common';
 import { ConfigModuleOptions } from '@nestjs/config';
 import { RequestValidationError } from '@/common/errors';
-import { CONFIG, ENVIRONMENT } from '@/enums';
 import Joi from 'joi';
+
 import {
   ErrorFormat,
   LoggerModuleOptions,
   TranslatorModuleOptions,
 } from '@/types';
+import { CONFIG, ENVIRONMENT } from '@/enums';
 import { TranslationKeySeparator } from '@/constants';
 
 const { DEV, TEST, PROD } = ENVIRONMENT;

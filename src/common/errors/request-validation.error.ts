@@ -1,4 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
+
 import { ErrorFormat } from '@/types';
 
 /**

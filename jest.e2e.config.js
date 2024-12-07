@@ -23,4 +23,8 @@ module.exports = {
   // The glob patterns Jest uses to detect test files
   testMatch: ['**/*.e2e-spec.{js,ts,jsx,tsx}', '**/*.e2e-test.{js,ts,jsx,tsx}'],
   verbose: true,
+  // Module name mapper for path aliases
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 };

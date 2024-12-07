@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+
 import { TranslationKeySeparatorToken } from '../constants';
 import { ITranslationKeyFormatterService } from '../interfaces';
 import { TranslationKeyAndArgs } from '../types';

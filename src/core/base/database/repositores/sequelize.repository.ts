@@ -1,6 +1,6 @@
 // /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // import { FindOptions, Model, ModelStatic } from 'sequelize';
-// import { FIND_OPERATOR } from './constants';
+// import { FindOperator } from './constants';
 // import {
 //   FindOneOptions,
 //   FindWhereOptions,
@@ -65,40 +65,40 @@
 
 //     for (const [op, value] of Object.entries(operator)) {
 //       switch (op) {
-//         case FIND_OPERATOR.LT:
+//         case FindOperator.LT:
 //           sequelizeOp[Op.lt] = value;
 //           break;
-//         case FIND_OPERATOR.GT:
+//         case FindOperator.GT:
 //           sequelizeOp[Op.gt] = value;
 //           break;
-//         case FIND_OPERATOR.LTE:
+//         case FindOperator.LTE:
 //           sequelizeOp[Op.lte] = value;
 //           break;
-//         case FIND_OPERATOR.GTE:
+//         case FindOperator.GTE:
 //           sequelizeOp[Op.gte] = value;
 //           break;
-//         case FIND_OPERATOR.NE:
+//         case FindOperator.NE:
 //           sequelizeOp[Op.ne] = value;
 //           break;
-//         case FIND_OPERATOR.IN:
+//         case FindOperator.IN:
 //           sequelizeOp[Op.in] = value;
 //           break;
-//         case FIND_OPERATOR.NIN:
+//         case FindOperator.NIN:
 //           sequelizeOp[Op.notIn] = value;
 //           break;
-//         case FIND_OPERATOR.LIKE:
+//         case FindOperator.LIKE:
 //           sequelizeOp[Op.like] = value;
 //           break;
-//         case FIND_OPERATOR.ILIKE:
+//         case FindOperator.ILIKE:
 //           sequelizeOp[Op.iLike] = value;
 //           break;
-//         case FIND_OPERATOR.BETWEEN:
+//         case FindOperator.BETWEEN:
 //           sequelizeOp[Op.between] = value;
 //           break;
-//         case FIND_OPERATOR.ISNULL:
+//         case FindOperator.ISNULL:
 //           sequelizeOp[Op.is] = null;
 //           break;
-//         case FIND_OPERATOR.ANY:
+//         case FindOperator.ANY:
 //           sequelizeOp[Op.any] = value;
 //           break;
 //         // Add more operators as needed

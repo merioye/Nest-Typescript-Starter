@@ -1,5 +1,6 @@
 import { Controller, Get, Inject } from '@nestjs/common';
 import { ILogger, LoggerToken } from '@/modules/common/logger';
+
 import { HealthServiceToken } from './constants';
 import { IHealthService } from './interfaces';
 import { Health } from './types';

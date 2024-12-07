@@ -1,4 +1,5 @@
 import { Transaction } from 'sequelize';
+
 import { ITransaction } from '../interfaces';
 
 /**

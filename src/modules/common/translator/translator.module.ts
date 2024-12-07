@@ -6,7 +6,9 @@ import {
   I18nModule,
   QueryResolver,
 } from 'nestjs-i18n';
+
 import { TranslatorModuleOptions } from '@/types';
+
 import {
   TranslationKeyFormatterServiceToken,
   TranslationKeySeparatorToken,

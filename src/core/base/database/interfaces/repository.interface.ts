@@ -1,7 +1,9 @@
 import { PartialDeep } from 'type-fest';
+
 import { ITransaction } from '.';
 import {
-  AggregateOptions,
+  AggregatePipelineOptions,
+  AggregateResult,
   DeleteOptions,
   FindManyOptions,
   FindOneOptions,
@@ -230,11 +232,13 @@ export interface IRepository<Entity> {
   ): Promise<number>;
 
   /**
-   * Perform aggregation operations
-   * @param options - Options for the aggregation
-   * @returns Promise resolving to the aggregation results
+   * Perform aggregation operations using a pipeline approach
+   * @param options - Options for the aggregation pipeline
+   * @returns Promise resolving to an array of aggregation results
    */
-  aggregate(options: AggregateOptions<Entity>): Promise<Entity[]>;
+  aggregatePipeline<Result = AggregateResult<Entity>>(
+    options: AggregatePipelineOptions<Entity>
+  ): Promise<Result[]>;
 
   /**
    * Starts a new database transaction

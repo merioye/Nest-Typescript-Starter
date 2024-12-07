@@ -26,6 +26,7 @@ type User = {
   authoredBooks: Book[];
   purchasedBooks: Book[];
   tags: Tag[];
+  interests: string[];
   isDeleted: boolean;
 };
 

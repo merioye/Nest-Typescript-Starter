@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ENVIRONMENT } from '@/enums';
 import { createLogger, format, Logger, transports } from 'winston';
+
 import { LoggerModuleOptions } from '@/types';
+import { ENVIRONMENT } from '@/enums';
+
 import { ILogger } from '../interfaces';
 
 /**
@@ -35,9 +37,10 @@ export class WinstonLogger implements ILogger {
    */
   private constructor({ environment, logsDirPath }: LoggerModuleOptions) {
     const isTestingEnvironment = environment === ENVIRONMENT.TEST;
+    const isDevelopmentEnvironment = environment === ENVIRONMENT.DEV;
 
     this._logger = createLogger({
-      level: 'info',
+      level: isDevelopmentEnvironment ? 'debug' : 'info',
       defaultMeta: {
         application: 'nest + typescript template',
       },

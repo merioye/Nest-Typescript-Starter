@@ -2,46 +2,93 @@
 // ############################### Common Types #################################
 
 import { PartialDeep } from 'type-fest';
+
 import { Op_Symbol } from '../constants';
-import { FIND_OPERATOR, UPDATE_OPERATOR } from '../enums';
-import { ITransaction } from '../interfaces';
+import { AggregateFunction, FindOperator, UpdateOperator } from '../enums';
+import {
+  ConditionalExpression,
+  DateExpression,
+  Expression,
+  MathExpression,
+  StringExpression,
+} from './expression.types';
+
+// ############################### Helper Types #################################
+
+/**
+ * Helper type for numeric fields in an entity
+ */
+export type NumericFields<Entity> = {
+  [K in keyof Entity as Entity[K] extends number ? K : never]: Entity[K];
+};
+
+/**
+ * Helper type for groupable fields (string, number, boolean)
+ */
+export type GroupableFields<Entity> = {
+  [K in keyof Entity as Entity[K] extends string | number | boolean
+    ? K
+    : never]: Entity[K];
+};
+
+/**
+ * Helper type for orderable fields (string, number, Date)
+ */
+export type OrderableFields<Entity> = {
+  [K in keyof Entity as Entity[K] extends string | number | Date
+    ? K
+    : never]: Entity[K];
+};
 
 /**
  * Options for finding entities with complex conditions
  * This type allows for nested conditions and various operators
  */
-export type FindWhereOptions<Entity> = {
-  /**
-   * Operators for complex queries (e.g., LT, GT, IN)
-   */
-  [Op_Symbol]?: WhereOperators<Entity>;
-} & {
-  /**
-   * Properties of the entity to query
-   * Can be a direct value, a set of operators, or nested conditions
-   */
-  [K in keyof Entity]?:
-    | Entity[K]
-    | WhereOperators<Pick<Entity, K>>
-    // | FindWhereOptions<Entity[K]>;
-    // Only recurse if Entity[K] is an object, excluding primitives
-    | (Entity[K] extends object ? FindWhereOptions<Entity[K]> : never);
+export type FindWhereOptions<Entity> = WhereValue<Entity>;
+
+/**
+ * Helper type to extract relation fields from an entity
+ */
+type RelationFields<Entity> = {
+  [K in keyof Entity]: NonNullable<Entity[K]> extends object ? K : never;
+}[keyof Entity];
+
+/**
+ * Helper type for extracting field names from a relation
+ */
+type RelationFieldNames<T> = T extends (infer U)[]
+  ? keyof NonNullable<U>
+  : keyof NonNullable<T>;
+
+/**
+ * Helper type for handling array relations in where conditions
+ */
+type ArrayRelationWhere<T> = T extends (infer U)[]
+  ? FindWhereOptions<NonNullable<U>>
+  : FindWhereOptions<NonNullable<T>>;
+
+/**
+ * Helper type for relation options
+ */
+export type RelationsOptions<Entity> = {
+  [P in RelationFields<Entity>]?:
+    | boolean
+    | RelationFieldNames<Entity[P]>[]
+    | (Entity[P] extends (infer U)[]
+        ? RelationsOptions<U>
+        : RelationsOptions<Entity[P]>);
 };
 
 /**
- * Options for specifying relations to be loaded
- * Can be a boolean to load all fields, an array of field names,
- * or an object for nested relations
+ * Order direction options
  */
-export type RelationsOptions<Entity> = {
-  [P in keyof Entity]?:
-    | true
-    // | (keyof Entity[P])[]
-    // | RelationsOptions<Entity[P]>;
-    // Only allow an array of field names if Entity[P] is an object
-    | (Entity[P] extends object ? (keyof Entity[P])[] : never)
-    // Only allow nested relations if Entity[P] is an object
-    | (Entity[P] extends object ? RelationsOptions<Entity[P]> : never);
+export type OrderDirection = 'asc' | 'desc';
+
+/**
+ * Options for ordering query results
+ */
+export type OrderOptions<Entity> = {
+  [P in keyof Entity]?: OrderDirection;
 };
 
 /**
@@ -50,9 +97,6 @@ export type RelationsOptions<Entity> = {
  */
 export type SelectOptions<Entity> =
   | (keyof Entity)[]
-  // | {
-  //     [P in keyof Entity]?: true | SelectOptions<Entity[P]>;
-  //   };
   | {
       [P in keyof Entity]?:
         | true
@@ -74,9 +118,9 @@ export type CommonOptions<Entity> = {
    */
   relations?: RelationsOptions<Entity>;
   /**
-   * The database transaction in which the current operation should be executed
+   * Specifies the order of the query results
    */
-  transaction?: ITransaction;
+  order?: OrderOptions<Entity>;
 };
 
 // ############################### Other Types #################################
@@ -90,26 +134,9 @@ export type FindOneOptions<Entity> = {
    */
   where?: FindWhereOptions<Entity>;
   /**
-   * Specifies the order of the results
-   * Keys are entity properties, values are 'asc' or 'desc'
-   */
-  // order?: Partial<{
-  //   [P in keyof Entity]?: 'asc' | 'desc';
-  // }>;
-  order?: {
-    [P in keyof Entity]?: Entity[P] extends string | number | Date
-      ? 'asc' | 'desc'
-      : never;
-  };
-  /**
    * If true, includes soft-deleted entities in the search
    */
   withDeleted?: boolean;
-  /**
-   * The name of the column to use for soft-deletion
-   * @default 'isDeleted'
-   */
-  softDeleteColumnName?: string;
 } & CommonOptions<Entity>;
 
 /**
@@ -158,11 +185,6 @@ export type DeleteOptions<Entity> = {
    * Additional options for the delete operation
    */
   options?: CommonOptions<Entity>;
-  /**
-   * The name of the column to use for soft-deletion
-   * @default 'isDeleted'
-   */
-  softDeleteColumnName?: string;
 };
 
 /**
@@ -177,11 +199,6 @@ export type RestoreOptions<Entity> = {
    * Conditions to determine which entities to restore
    */
   options?: CommonOptions<Entity>;
-  /**
-   * The name of the column to use for soft-deletion
-   * @default 'isDeleted'
-   */
-  softDeleteColumnName?: string;
 };
 
 /**
@@ -191,14 +208,10 @@ export type NumericColumnAggregateOptions<Entity> = {
   /**
    * The name of the numeric column to perform the aggregation on
    */
-  // columnName: keyof Pick<
-  //   Entity,
-  //   {
-  //     [K in keyof Entity]: Entity[K] extends number ? K : never;
-  //   }[keyof Entity]
-  // >;
   columnName: keyof {
-    [K in keyof Entity as Entity[K] extends number ? K : never]: Entity[K];
+    [K in keyof Entity as Entity[K] extends number | undefined
+      ? K
+      : never]: Entity[K];
   };
   /**
    * Conditions to filter the entities before aggregation
@@ -236,203 +249,342 @@ export type UpsertOptions<Entity> = {
 };
 
 /**
- * Options for aggregate operations
+ * Type for field mapping in aggregate operations
  */
-export type AggregateOptions<Entity> = {
-  /**
-   * Fields to group the results by
-   * Can only group by primitive fields (string, number, boolean)
-   */
-  // groupBy?: (keyof Entity)[];
-  groupBy?: (keyof {
-    [K in keyof Entity as Entity[K] extends string | number | boolean
-      ? K
-      : never]: Entity[K];
-  })[];
-  /**
-   * Conditions to filter the groups after aggregation
-   */
-  having?: FindWhereOptions<Entity>;
-  /**
-   * Conditions to filter the entities before aggregation
-   */
-  where?: FindWhereOptions<Entity>;
-  /**
-   * Specifies the order of the results
-   * Keys are entity properties, values are 'asc' or 'desc'
-   */
-  // order?: Partial<{
-  //   [P in keyof Entity]?: 'asc' | 'desc';
-  // }>;
-  order?: {
-    [P in keyof Entity]?: Entity[P] extends string | number | Date
-      ? 'asc' | 'desc'
-      : never;
+export type FieldMapping<T> = Array<keyof T | string>;
+
+/**
+ * Type for aggregate function configuration
+ */
+export interface AggregateFunctionConfig<
+  T,
+  ComputedFields extends string = string,
+> {
+  function: AggregateFunction;
+  field: keyof T | ComputedFields;
+  alias: string;
+}
+
+/**
+ * Type for computed field configuration
+ */
+export interface ComputedFieldConfig {
+  expression:
+    | Expression<any>
+    | MathExpression
+    | StringExpression
+    | DateExpression
+    | ConditionalExpression;
+  type: 'math' | 'string' | 'date' | 'conditional';
+}
+
+/**
+ * Type for aggregate pipeline stage
+ */
+export interface AggregatePipelineStage<T> {
+  $where?: FindWhereOptions<T>;
+  $group?: {
+    by: Array<keyof T | string> | null;
+    functions: Array<AggregateFunctionConfig<T>>;
   };
-  /**
-   * Fields to sum (only numeric fields)
-   */
-  // sum?: Partial<{
-  //   [P in keyof Entity]?: true;
-  // }>;
-  sum?: Partial<{
-    [P in keyof Entity as Entity[P] extends number ? P : never]: true;
-  }>;
-  /**
-   * Fields to average (only numeric fields)
-   */
-  // avg?: Partial<{
-  //   [P in keyof Entity]?: true;
-  // }>;
-  avg?: Partial<{
-    [P in keyof Entity as Entity[P] extends number ? P : never]: true;
-  }>;
-  /**
-   * Fields to count
-   */
-  count?: Partial<{
-    [P in keyof Entity]?: true;
-  }>;
-  /**
-   * Numeric fields to find the minimum value of
-   */
-  min?: Partial<{
-    [P in keyof Entity as Entity[P] extends number ? P : never]: true;
-  }>;
-  /**
-   * Numeric fields to find the maximum value of
-   */
-  max?: Partial<{
-    [P in keyof Entity as Entity[P] extends number ? P : never]: true;
-  }>;
-  /**
-   * Maximum number of results to return
-   */
-  limit?: number;
-  /**
-   * Number of results to skip before returning
-   */
-  skip?: number;
-  /**
-   * Fields to select in the result
-   */
-  select?: SelectOptions<Entity>;
-  /**
-   * Relations to include in the result
-   */
-  relations?: RelationsOptions<Entity>;
-  /**
-   * Whether to include soft-deleted entities
-   */
+  $project?: {
+    fields: Array<keyof T | string>;
+    computedFields?: {
+      [key: string]: ComputedFieldConfig;
+    };
+  };
+  $order?: {
+    [key: string]: OrderDirection;
+  };
+  $skip?: number;
+  $limit?: number;
+}
+
+/**
+ * Options for aggregate pipeline
+ */
+export interface AggregatePipelineOptions<T> {
+  pipeline: AggregatePipelineStage<T>[];
+  select?: SelectOptions<T>;
+  relations?: RelationsOptions<T>;
   withDeleted?: boolean;
-  /**
-   * The name of the column to use for soft-deletion
-   * @default 'isDeleted'
-   */
-  softDeleteColumnName?: string;
-  /**
-   * The database transaction in which the current operation should be executed
-   */
-  transaction?: ITransaction;
+}
+
+/**
+ * Result type for aggregate operations
+ */
+export type AggregateResult<T> = {
+  [K in keyof T]?: any;
+} & {
+  [key: string]: any;
 };
 
 // ############################### Operator Types #################################
 
 /**
+ * Type for fields that support comparison operations (numbers, dates)
+ */
+type Comparable = number | Date;
+
+/**
+ * Helper type to extract keys of Entity that have comparable types, including optional fields
+ */
+type ComparableKeys<Entity> = {
+  [P in keyof Entity]: NonNullable<Entity[P]> extends Comparable ? P : never;
+}[keyof Entity];
+
+/**
+ * Helper type for string fields
+ */
+type StringKeys<Entity> = {
+  [P in keyof Entity]: NonNullable<Entity[P]> extends string ? P : never;
+}[keyof Entity];
+
+/**
+ * Helper type to extract array element type
+ */
+type ArrayElement<T> = T extends (infer U)[] ? U : never;
+
+/**
+ * Helper type for array fields
+ */
+// type ArrayFields<Entity> = {
+//   [P in keyof Entity as Entity[P] extends any[]
+//     ? P
+//     : never]: Entity[P] extends any[] ? ArrayElement<Entity[P]> : never;
+// };
+
+/**
+ * Helper type for array keys
+ */
+type ArrayKeys<Entity> = {
+  [P in keyof Entity]: Entity[P] extends any[] ? P : never;
+}[keyof Entity];
+
+/**
+ * Helper type to create a partial record with only comparable fields
+ */
+// type ComparableFields<Entity> = Partial<{
+//   [P in ComparableKeys<Entity>]: NonNullable<Entity[P]>;
+// }>;
+
+/**
+ * Helper type to create a partial record with only string fields
+ */
+type StringFields<Entity> = Partial<{
+  [P in StringKeys<Entity>]: NonNullable<Entity[P]>;
+}>;
+
+/**
+ * Helper type for array field values
+ */
+// type ArrayFieldValue<Entity> = {
+//   [P in keyof Entity as Entity[P] extends any[] ? P : never]: Array<
+//     Partial<ArrayElement<Entity[P]>>
+//   >;
+// };
+
+/**
+ * Helper type for direct array values
+ */
+// type DirectArrayValue<Entity> = Entity extends any[]
+//   ? Array<Partial<ArrayElement<Entity>>>
+//   : never;
+
+/**
+ * Helper type for array contains values
+ */
+type IsPrimitiveArray<T> = T extends (string | number | boolean | Date)[]
+  ? true
+  : false;
+
+type DeepPrimitiveArrayValue<T> = T extends object
+  ? {
+      [P in keyof T]?: T[P] extends any[]
+        ? IsPrimitiveArray<T[P]> extends true
+          ? ArrayElement<T[P]>
+          : never
+        : T[P] extends object
+        ? DeepPrimitiveArrayValue<T[P]>
+        : never;
+    }
+  : never;
+
+type ArrayContainsValue<Entity> = {
+  [P in keyof Entity as Entity[P] extends any[] ? P : never]:
+    | (IsPrimitiveArray<Entity[P]> extends true
+        ? ArrayElement<Entity[P]>
+        : never)
+    | DeepPrimitiveArrayValue<ArrayElement<Entity[P]>>;
+};
+
+/**
+ * Helper type for any operator values
+ */
+// type AnyOperatorValue<Entity> = Partial<{
+//   [P in keyof Entity as Entity[P] extends any[] ? P : never]: Array<
+//     Partial<ArrayElement<Entity[P]>>
+//   >;
+// }>;
+
+/**
+ * Helper type for nested field values
+ */
+type NestedFieldValue<T> = T extends object
+  ? {
+      [P in keyof T]?: T[P] extends any[]
+        ?
+            | Partial<ArrayElement<T[P]>>
+            | { [K in keyof ArrayElement<T[P]>]: ArrayElement<T[P]>[K] }
+        : T[P] extends object
+        ? NestedFieldValue<T[P]>
+        : T[P] | null;
+    }
+  : T | null;
+
+/**
+ * Helper type for field values
+ */
+type FieldValue<Entity, P extends keyof Entity> = Entity[P] extends any[]
+  ?
+      | Partial<ArrayElement<Entity[P]>>
+      | { [Op_Symbol]?: WhereOperators<ArrayElement<Entity[P]>> }
+  : Entity[P] extends object
+  ? NestedFieldValue<Entity[P]> | { [Op_Symbol]?: WhereOperators<Entity[P]> }
+  : Entity[P] | null;
+
+/**
+ * Helper type for where values
+ */
+type WhereValue<Entity> =
+  | Partial<{ [P in keyof Entity]: Entity[P] | null }>
+  | { [Op_Symbol]?: WhereOperators<Entity> }
+  | { [P in keyof Entity]?: WhereValue<Entity[P]> };
+
+/**
  * Operators for complex where conditions in queries
  * @template Entity - The entity type these operators apply to
  */
-export interface WhereOperators<Entity> {
-  [FIND_OPERATOR.LT]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number ? number : never;
+export type WhereOperators<Entity> = {
+  [FindOperator.LT]?:
+    | Partial<{
+        [P in keyof Entity]: FieldValue<Entity, P>;
+      }>
+    | Entity[keyof Entity];
+  [FindOperator.GT]?:
+    | Partial<{
+        [P in keyof Entity]: FieldValue<Entity, P>;
+      }>
+    | Entity[keyof Entity];
+  [FindOperator.LTE]?:
+    | Partial<{
+        [P in keyof Entity]: FieldValue<Entity, P>;
+      }>
+    | Entity[keyof Entity];
+  [FindOperator.GTE]?:
+    | Partial<{
+        [P in keyof Entity]: FieldValue<Entity, P>;
+      }>
+    | Entity[keyof Entity];
+  [FindOperator.NE]?:
+    | Partial<{ [P in keyof Entity]: FieldValue<Entity, P> }>
+    | Entity[keyof Entity];
+  [FindOperator.IN]?:
+    | Partial<{ [P in keyof Entity]: Entity[P][] }>
+    | Entity[keyof Entity][];
+  [FindOperator.NIN]?:
+    | Partial<{ [P in keyof Entity]: Entity[P][] }>
+    | Entity[keyof Entity][];
+  [FindOperator.AND]?: (
+    | Partial<{ [P in keyof Entity]: Entity[P] }>
+    | { [Op_Symbol]: WhereOperators<Entity> }
+    | {
+        [P in RelationFields<Entity>]?: ArrayRelationWhere<Entity[P]>;
+      }
+  )[];
+  [FindOperator.OR]?: (
+    | Partial<{ [P in keyof Entity]: Entity[P] }>
+    | { [Op_Symbol]: WhereOperators<Entity> }
+    | {
+        [P in RelationFields<Entity>]?: ArrayRelationWhere<Entity[P]>;
+      }
+  )[];
+  [FindOperator.LIKE]?: StringFields<Entity> | string;
+  [FindOperator.ILIKE]?: StringFields<Entity> | string;
+  [FindOperator.BETWEEN]?:
+    | Partial<{
+        [P in ComparableKeys<Entity>]: [Entity[P], Entity[P]];
+      }>
+    | [Entity[keyof Entity], Entity[keyof Entity]];
+  [FindOperator.NOT_BETWEEN]?:
+    | Partial<{
+        [P in ComparableKeys<Entity>]: [Entity[P], Entity[P]];
+      }>
+    | [Entity[keyof Entity], Entity[keyof Entity]];
+  [FindOperator.ISNULL]?:
+    | Partial<{
+        [P in keyof Entity]: boolean;
+      }>
+    | boolean;
+  [FindOperator.NOT_NULL]?:
+    | Partial<{
+        [P in keyof Entity]: boolean;
+      }>
+    | boolean;
+  [FindOperator.ARRAY_CONTAINS]?:
+    | ArrayContainsValue<Entity>
+    | (IsPrimitiveArray<Entity[ArrayKeys<Entity>]> extends true
+        ? ArrayElement<Entity[ArrayKeys<Entity>]>
+        : DeepPrimitiveArrayValue<ArrayElement<Entity[ArrayKeys<Entity>]>>);
+  [FindOperator.ANY]?: Partial<{
+    [P in keyof Entity as Entity[P] extends any[] ? P : never]: Array<
+      Partial<ArrayElement<Entity[P]>>
+    >;
   }>;
-  [FIND_OPERATOR.GT]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number ? number : never;
-  }>;
-  [FIND_OPERATOR.LTE]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number ? number : never;
-  }>;
-  [FIND_OPERATOR.GTE]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number ? number : never;
-  }>;
-  [FIND_OPERATOR.NE]?: Partial<{ [P in keyof Entity]: Entity[P] }>;
-  /** In operator (value must be in the given array) */
-  [FIND_OPERATOR.IN]?: Partial<{ [P in keyof Entity]: Entity[P][] }>;
-  /** Not in operator (value must not be in the given array) */
-  [FIND_OPERATOR.NIN]?: Partial<{ [P in keyof Entity]: Entity[P][] }>;
-  [FIND_OPERATOR.AND]?: Partial<WhereOperators<Entity>>[];
-  [FIND_OPERATOR.OR]?: Partial<WhereOperators<Entity>>[];
-  /** Like operator (case-sensitive string matching) */
-  [FIND_OPERATOR.LIKE]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends string ? string : never;
-  }>;
-  /** Case-insensitive like operator */
-  [FIND_OPERATOR.ILIKE]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends string ? string : never;
-  }>;
-  /** Between operator for numeric fields (value must be between two given numeric values) */
-  [FIND_OPERATOR.BETWEEN]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number
-      ? [Entity[P], Entity[P]]
-      : never;
-  }>;
-  /** Not between operator for numeric fields (value must not be between two given numeric values) */
-  [FIND_OPERATOR.NOT_BETWEEN]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number
-      ? [Entity[P], Entity[P]]
-      : never;
-  }>;
-  [FIND_OPERATOR.ISNULL]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends null ? null : never;
-  }>;
-  /** Any operator (at least one element in array must match) */
-  [FIND_OPERATOR.ANY]?: Partial<{ [P in keyof Entity]: Entity[P][] }>;
-  /** Array contains operator (array must contain the given element) */
-  [FIND_OPERATOR.ARRAY_CONTAINS]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends any[] ? Entity[P][number] : never;
-  }>;
-  /** Size operator (for array fields) */
-  [FIND_OPERATOR.SIZE]: Partial<{
-    [P in keyof Entity]: Entity[P] extends any[] ? number : never;
-  }>;
-  /** Starts with operator (for string fields) */
-  [FIND_OPERATOR.STARTSWITH]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends string ? string : never;
-  }>;
-  /** Not starts with operator (for string fields) */
-  [FIND_OPERATOR.NOT_STARTSWITH]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends string ? string : never;
-  }>;
-  /** Ends with operator (for string fields) */
-  [FIND_OPERATOR.ENDSWITH]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends string ? string : never;
-  }>;
-  /** Not ends with operator (for string fields) */
-  [FIND_OPERATOR.NOT_ENDSWITH]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends string ? string : never;
-  }>;
-  /** Substring operator (for string fields) */
-  [FIND_OPERATOR.SUBSTRING]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends string ? string : never;
-  }>;
-  /** Match operator (for string fields, using regex) */
-  [FIND_OPERATOR.MATCH]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends string ? RegExp | string : never;
-  }>;
-}
+  [FindOperator.SIZE]?:
+    | Partial<{
+        [P in ArrayKeys<Entity>]: number;
+      }>
+    | number;
+  [FindOperator.STARTSWITH]?: StringFields<Entity> | string;
+  [FindOperator.NOT_STARTSWITH]?: StringFields<Entity> | string;
+  [FindOperator.ENDSWITH]?: StringFields<Entity> | string;
+  [FindOperator.NOT_ENDSWITH]?: StringFields<Entity> | string;
+  [FindOperator.SUBSTRING]?: StringFields<Entity> | string;
+  [FindOperator.MATCH]?:
+    | Partial<{
+        [P in StringKeys<Entity>]: RegExp;
+      }>
+    | RegExp;
+};
 
 /**
  * Operators for update operations
  * @template Entity - The entity type these operators apply to
  */
 export type UpdateOperators<Entity> = {
-  [UPDATE_OPERATOR.INC]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number ? number : never;
-  }>;
-  [UPDATE_OPERATOR.DEC]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number ? number : never;
-  }>;
-  [UPDATE_OPERATOR.MUL]?: Partial<{
-    [P in keyof Entity]: Entity[P] extends number ? number : never;
-  }>;
+  [UpdateOperator.INC]?:
+    | Partial<{
+        [P in keyof Entity]: FieldValue<Entity, P>;
+      }>
+    | Entity[keyof Entity];
+  [UpdateOperator.DEC]?:
+    | Partial<{
+        [P in keyof Entity]: FieldValue<Entity, P>;
+      }>
+    | Entity[keyof Entity];
+  [UpdateOperator.MUL]?:
+    | Partial<{
+        [P in keyof Entity]: FieldValue<Entity, P>;
+      }>
+    | Entity[keyof Entity];
 };
+
+/**
+ * Options for ordering aggregate results
+ */
+export type AggregateOrderOptions = {
+  [key: string]: OrderDirection;
+};
+
+export * from './expression.types';

@@ -1,95 +1,95 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { DatabaseError } from '@/common/errors';
 import { PrismaClient } from '@prisma/client';
+
 import { ITransaction } from '../interfaces';
 
 /**
- * Handles transactions in a Prisma ORM database.
+ * Handles transactions in a Prisma database.
  * Implements the `ITransaction` interface to provide commit and rollback functionality.
  *
  * @class PrismaTransaction
  * @implements {ITransaction}
  */
 export class PrismaTransaction implements ITransaction {
-  /**
-   * Tracks whether the transaction has been completed (committed or rolled back).
-   */
-  private _isCompleted: boolean = false;
-  /**
-   * Function to resolve the transaction, used in commit.
-   */
-  private _resolveTransaction: ((value: unknown) => void) | null = null;
-  /**
-   * Function to reject the transaction, used in rollback.
-   */
-  private _rejectTransaction: ((reason?: any) => void) | null = null;
+  private _isCompleted = false;
+  private _rollbackPromise: Promise<void>;
+  private _resolve: (() => void) | null = null;
+  private _reject: ((error: Error) => void) | null = null;
 
   /**
-   * A promise that represents the transaction process.
-   * @constructor
+   * Creates a new PrismaTransaction instance.
+   * @param _prismaClient - The Prisma client instance to use for the transaction
+   * @param _originalClient - The original Prisma client instance
    */
-  private constructor(private readonly _transactionPromise: Promise<unknown>) {}
+  private constructor(
+    private readonly _prismaClient: any,
+    private readonly _originalClient: PrismaClient
+  ) {
+    this._rollbackPromise = new Promise((resolve, reject) => {
+      this._resolve = resolve;
+      this._reject = reject;
+    });
+  }
 
   /**
-   * Commits the current transaction, marking it as completed and resolving the transaction promise.
-   * Throws an error if the transaction has already been completed.
-   *
+   * Get the transaction-bound Prisma client.
+   * This should be used for all database operations within the transaction.
+   */
+  public get prisma(): any {
+    if (this._isCompleted) {
+      throw new DatabaseError('Transaction has already been completed');
+    }
+    return this._prismaClient;
+  }
+
+  /**
+   * Get the original Prisma client.
+   * This is needed to start new transactions.
+   */
+  public get originalClient(): PrismaClient {
+    return this._originalClient;
+  }
+
+  /**
+   * Commits the current transaction.
+   * In Prisma, the transaction is automatically committed when the callback completes successfully.
    * @throws {DatabaseError} If the transaction has already been completed.
-   * @returns {Promise<void>} A promise that resolves when the transaction is successfully committed.
    */
   public async commit(): Promise<void> {
     if (this._isCompleted) {
       throw new DatabaseError('Transaction has already been completed');
     }
     this._isCompleted = true;
-    this._resolveTransaction?.(null);
-    await this._transactionPromise;
+    this._resolve?.();
+    await this._rollbackPromise;
   }
 
   /**
-   * Rolls back the current transaction, marking it as completed and rejecting the transaction promise.
-   * Throws an error if the transaction has already been completed.
-   *
+   * Rolls back the current transaction.
+   * In Prisma, throwing an error within the transaction callback triggers a rollback.
    * @throws {DatabaseError} If the transaction has already been completed.
-   * @returns {Promise<void>} A promise that resolves when the transaction is successfully rolled back.
    */
   public async rollback(): Promise<void> {
     if (this._isCompleted) {
       throw new DatabaseError('Transaction has already been completed');
     }
     this._isCompleted = true;
-    this._rejectTransaction?.(new DatabaseError('Transaction rolled back'));
-    try {
-      await this._transactionPromise;
-    } catch (error) {
-      // Ignore the error, as it's expected during rollback
-    }
+    const error = new DatabaseError('Transaction rolled back');
+    this._reject?.(error);
+    await this._rollbackPromise.catch(() => {
+      // Ignore the error as it's expected during rollback
+    });
   }
 
   /**
-   * Starts a new transaction on the given Prisma database.
-   *
-   * @param {AnyDrizzleDatabase} prisma - The prisma db client to start the transaction on.
-   * @returns {Promise<DrizzleTransaction>} A promise that resolves with the started transaction.
+   * Starts a new transaction using the provided Prisma client.
+   * @param prismaClient - The Prisma client to start the transaction with.
+   * @returns Promise resolving to the started transaction.
    */
-  public static start(prisma: PrismaClient): Promise<PrismaTransaction> {
-    let resolveTransaction: ((value: unknown) => void) | null = null;
-    let rejectTransaction: ((reason?: any) => void) | null = null;
-
-    const transactionPromise = new Promise((resolve, reject) => {
-      resolveTransaction = resolve;
-      rejectTransaction = reject;
-    });
-
-    const transaction = new PrismaTransaction(transactionPromise);
-    transaction._resolveTransaction = resolveTransaction;
-    transaction._rejectTransaction = rejectTransaction;
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    return prisma.$transaction(async (prismaTransaction: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      Object.assign(transaction, { prisma: prismaTransaction });
-      await transactionPromise;
-      return transaction;
+  public static start(prismaClient: PrismaClient): Promise<PrismaTransaction> {
+    return prismaClient.$transaction<PrismaTransaction>((tx) => {
+      return Promise.resolve(new PrismaTransaction(tx, prismaClient));
     });
   }
 }

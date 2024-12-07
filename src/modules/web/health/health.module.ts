@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+
 import { HealthServiceToken } from './constants';
 import { HealthController } from './health.controller';
 import { HealthService } from './services';

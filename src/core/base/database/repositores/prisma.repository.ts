@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
@@ -6,22 +7,36 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ForbiddenError, NotFoundError } from '@/common/errors';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PartialDeep } from 'type-fest';
+
 import { Op_Symbol, SoftDeleteDefaultColumnName } from '../constants';
-import { FIND_OPERATOR, UPDATE_OPERATOR } from '../enums';
-import { IRepository, ITransaction } from '../interfaces';
+import {
+  AggregateFunction,
+  ExpressionType,
+  FindOperator,
+  UpdateOperator,
+} from '../enums';
+import { PrismaExpressionBuilder } from '../expression-builders';
+import { IExpressionBuilder, IRepository, ITransaction } from '../interfaces';
 import { PrismaTransaction } from '../transactions';
 import {
-  AggregateOptions,
+  AggregatePipelineOptions,
+  AggregateResult,
+  ComputedFieldConfig,
+  ConditionalExpression,
+  DateExpression,
   DeleteOptions,
   FindManyOptions,
   FindOneOptions,
   FindWhereOptions,
+  MathExpression,
   NumericColumnAggregateOptions,
+  OrderDirection,
   RelationsOptions,
   RestoreOptions,
   SelectOptions,
+  StringExpression,
   UpdateOperators,
   UpdateOptions,
   UpsertOptions,
@@ -29,13 +44,23 @@ import {
 } from '../types';
 
 export class PrismaRepository<Entity> implements IRepository<Entity> {
+  private _activeTransaction: PrismaTransaction | null = null;
+  private readonly _expressionBuilder: IExpressionBuilder;
+  private readonly _softDeleteColumnName: string;
+
   public constructor(
     private readonly prisma: PrismaClient,
-    private readonly modelName: string
-  ) {}
+    private readonly modelName: string,
+    softDeleteColumnName?: string
+  ) {
+    this._expressionBuilder = new PrismaExpressionBuilder();
+    this._softDeleteColumnName =
+      softDeleteColumnName || SoftDeleteDefaultColumnName;
+  }
 
   private get model(): any {
-    const prismaModel = this.prisma[this.modelName as any] as any;
+    const client = this._activeTransaction?.prisma || this.prisma;
+    const prismaModel = client[this.modelName as any] as any;
     if (!prismaModel) {
       throw new NotFoundError(`Invalid model name: ${this.modelName}`);
     }
@@ -43,15 +68,34 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
   }
 
   public async beginTransaction(): Promise<ITransaction> {
-    return await PrismaTransaction.start(this.prisma);
+    if (this._activeTransaction) {
+      throw new Error('A transaction is already in progress');
+    }
+    const transaction = await PrismaTransaction.start(this.prisma);
+    this._activeTransaction = transaction;
+    return transaction;
   }
 
   public async commitTransaction(transaction: ITransaction): Promise<void> {
+    if (!this._activeTransaction) {
+      throw new Error('No active transaction');
+    }
+    if (this._activeTransaction !== transaction) {
+      throw new Error('Transaction mismatch');
+    }
     await transaction.commit();
+    this._activeTransaction = null;
   }
 
   public async rollbackTransaction(transaction: ITransaction): Promise<void> {
+    if (!this._activeTransaction) {
+      throw new Error('No active transaction');
+    }
+    if (this._activeTransaction !== transaction) {
+      throw new Error('Transaction mismatch');
+    }
     await transaction.rollback();
+    this._activeTransaction = null;
   }
 
   public async findOne(
@@ -61,11 +105,12 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const select = this.convertSelectToPrisma(options.select);
     const include = this.convertRelationsToPrisma(options.relations);
     const orderBy = this.convertOrderToPrisma(options.order);
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    if (
+      this._softDeleteColumnName in this.model.fields &&
+      !options.withDeleted
+    ) {
+      where[this._softDeleteColumnName] = false;
     }
 
     const result = await this.model.findFirst({
@@ -86,11 +131,12 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const orderBy = this.convertOrderToPrisma(options.order);
     const skip = options?.skip;
     const take = options?.limit;
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    if (
+      this._softDeleteColumnName in this.model.fields &&
+      !options.withDeleted
+    ) {
+      where[this._softDeleteColumnName] = false;
     }
 
     const result = await this.model.findMany({
@@ -111,11 +157,12 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const select = this.convertSelectToPrisma(options.select);
     const include = this.convertRelationsToPrisma(options.relations);
     const orderBy = this.convertOrderToPrisma(options.order);
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    if (
+      this._softDeleteColumnName in this.model.fields &&
+      !options.withDeleted
+    ) {
+      where[this._softDeleteColumnName] = false;
     }
 
     const result = await this.model.findFirst({
@@ -142,11 +189,12 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const orderBy = this.convertOrderToPrisma(options.order);
     const skip = options?.skip;
     const take = options?.limit;
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    if (
+      this._softDeleteColumnName in this.model.fields &&
+      !options.withDeleted
+    ) {
+      where[this._softDeleteColumnName] = false;
     }
 
     const result = await this.model.findMany({
@@ -168,11 +216,12 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const select = this.convertSelectToPrisma(options.select);
     const include = this.convertRelationsToPrisma(options.relations);
     const orderBy = this.convertOrderToPrisma(options.order);
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    if (
+      this._softDeleteColumnName in this.model.fields &&
+      !options.withDeleted
+    ) {
+      where[this._softDeleteColumnName] = false;
     }
 
     const result = await this.model.findFirst({
@@ -186,28 +235,29 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
 
   public async distinct<K extends keyof Entity>(
     field: K,
-    options: Omit<FindManyOptions<Entity>, 'select'> = {}
+    options: FindManyOptions<Entity> = {}
   ): Promise<Entity[K][]> {
     const where = this.convertWhereToPrisma(options.where);
     const include = this.convertRelationsToPrisma(options.relations);
     const orderBy = this.convertOrderToPrisma(options.order);
     const skip = options?.skip;
     const take = options?.limit;
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    if (
+      this._softDeleteColumnName in this.model.fields &&
+      !options.withDeleted
+    ) {
+      where[this._softDeleteColumnName] = false;
     }
 
     const result = await this.model.findMany({
+      distinct: field,
       where,
       include,
       orderBy,
       skip,
       take,
       select: { [field]: true },
-      distinct: [field as string],
     });
     return result.map((item: any) => item[field as string]);
   }
@@ -400,10 +450,8 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const where = this.convertWhereToPrisma(whereOptions);
     const select = this.convertSelectToPrisma(extraOptions.select);
     const include = this.convertRelationsToPrisma(extraOptions.relations);
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
     const data = {
-      [softDeleteColumn]: true,
+      [this._softDeleteColumnName]: true,
     };
 
     try {
@@ -429,10 +477,8 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const where = this.convertWhereToPrisma(whereOptions);
     const select = this.convertSelectToPrisma(extraOptions.select);
     const include = this.convertRelationsToPrisma(extraOptions.relations);
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
     const data = {
-      [softDeleteColumn]: true,
+      [this._softDeleteColumnName]: true,
     };
 
     const deletedEntities = await this.model.updateMany({
@@ -458,10 +504,8 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const where = this.convertWhereToPrisma(whereOptions);
     const select = this.convertSelectToPrisma(extraOptions?.select);
     const include = this.convertRelationsToPrisma(extraOptions?.relations);
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
     const data = {
-      [softDeleteColumn]: false,
+      [this._softDeleteColumnName]: false,
     };
 
     try {
@@ -486,10 +530,8 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const where = this.convertWhereToPrisma(whereOptions);
     const select = this.convertSelectToPrisma(extraOptions?.select);
     const include = this.convertRelationsToPrisma(extraOptions?.relations);
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
     const data = {
-      [softDeleteColumn]: false,
+      [this._softDeleteColumnName]: false,
     };
 
     const restoreOperation = await this.model.updateMany({
@@ -527,11 +569,12 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const orderBy = this.convertOrderToPrisma(options.order);
     const skip = options?.skip;
     const take = options?.limit;
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    if (
+      this._softDeleteColumnName in this.model.fields &&
+      !options.withDeleted
+    ) {
+      where[this._softDeleteColumnName] = false;
     }
 
     return await this.model.count({
@@ -648,11 +691,12 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     const orderBy = this.convertOrderToPrisma(options.order);
     const skip = options?.skip;
     const take = options?.limit;
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    if (
+      this._softDeleteColumnName in this.model.fields &&
+      !options.withDeleted
+    ) {
+      where[this._softDeleteColumnName] = false;
     }
 
     const result = await this.model.findMany({
@@ -667,86 +711,144 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
     return result.length;
   }
 
-  async aggregate(options: AggregateOptions<Entity>): Promise<Entity[]> {
-    const groupBy = options.groupBy || undefined;
-    const where = this.convertWhereToPrisma(options.where);
-    const having = this.convertWhereToPrisma(options.having);
-    const order = this.convertOrderToPrisma(options.order);
-    const select = this.convertSelectToPrisma(options.select);
-    const include = this.convertRelationsToPrisma(options.relations);
-    const skip = options?.skip;
-    const take = options?.limit;
-    const softDeleteColumn =
-      options.softDeleteColumnName || SoftDeleteDefaultColumnName;
+  /**
+   * Perform aggregation operations using a pipeline approach
+   * @param options - Options for the aggregation pipeline
+   * @returns Promise resolving to an array of aggregation results
+   */
+  async aggregatePipeline<Result = AggregateResult<Entity>>(
+    options: AggregatePipelineOptions<Entity>
+  ): Promise<Result[]> {
+    const { pipeline, withDeleted } = options;
 
-    if (softDeleteColumn in this.model.fields) {
-      where[softDeleteColumn] = Boolean(options.withDeleted);
+    let query = this.model;
+    const computedFields: Record<string, any> = {};
+
+    for (const stage of pipeline) {
+      if (stage.$where) {
+        query = query.where(this.convertWhereToPrisma(stage.$where));
+      }
+
+      if (stage.$group) {
+        const groupBy = stage.$group.by?.map((field: any) => {
+          // If the field is in computedFields, use the raw SQL expression
+          if (field in computedFields) {
+            return Prisma.sql`${computedFields[field]}`;
+          }
+          return field.toString();
+        });
+        const aggregations: Record<string, any> = {};
+
+        for (const func of stage.$group.functions) {
+          const fieldName = func.field.toString();
+          const alias = func.alias;
+
+          // If the field is a computed field, use the raw SQL expression
+          const fieldExpression =
+            fieldName in computedFields ? computedFields[fieldName] : fieldName;
+
+          switch (func.function) {
+            case AggregateFunction.COUNT:
+              aggregations[alias] = { _count: fieldExpression };
+              break;
+            case AggregateFunction.SUM:
+              aggregations[alias] = { _sum: fieldExpression };
+              break;
+            case AggregateFunction.AVG:
+              aggregations[alias] = { _avg: fieldExpression };
+              break;
+            case AggregateFunction.MIN:
+              aggregations[alias] = { _min: fieldExpression };
+              break;
+            case AggregateFunction.MAX:
+              aggregations[alias] = { _max: fieldExpression };
+              break;
+            case AggregateFunction.FIRST:
+              aggregations[alias] = { _min: fieldExpression };
+              break;
+            case AggregateFunction.LAST:
+              aggregations[alias] = { _max: fieldExpression };
+              break;
+            case AggregateFunction.ARRAY:
+              aggregations[alias] = { _count: fieldExpression };
+              break;
+          }
+
+          // Store the alias in computedFields for later stages
+          computedFields[alias] = aggregations[alias];
+        }
+
+        query = query.groupBy(groupBy || {}).aggregate(aggregations);
+      }
+
+      if (stage.$project) {
+        const { fields, computedFields: projectComputedFields } =
+          stage.$project;
+        const select: Record<string, any> = {};
+
+        // Map regular fields and previously computed fields
+        if (fields) {
+          for (const field of fields) {
+            if (typeof field === 'string') {
+              // If the field is a computed field from previous stages, use the stored expression
+              select[field] =
+                field in computedFields ? computedFields[field] : true;
+            } else {
+              // Field with alias
+              const [fieldName, alias] = Object.entries(field)[0] as string[];
+              if (fieldName) {
+                select[(alias || fieldName) as string] =
+                  fieldName in computedFields
+                    ? computedFields[fieldName]
+                    : true;
+              }
+            }
+          }
+        }
+
+        // Handle computed fields
+        if (projectComputedFields) {
+          for (const [key, config] of Object.entries(projectComputedFields)) {
+            const expression = this.buildComputedFieldExpression(config);
+            select[key] = expression;
+            // Store the computed field for later stages
+            computedFields[key] = expression;
+          }
+        }
+
+        query = query.select(select);
+      }
+
+      if (stage.$order) {
+        const orderBy = Object.entries(stage.$order).reduce(
+          (acc, [field, direction]) => {
+            // If the field is a computed field, use the raw SQL expression
+            acc[field] =
+              field in computedFields
+                ? { sort: direction, expression: computedFields[field] }
+                : direction;
+            return acc;
+          },
+          {} as Record<string, any>
+        );
+
+        query = query.orderBy(orderBy);
+      }
+
+      if (stage.$skip) {
+        query = query.skip(stage.$skip);
+      }
+
+      if (stage.$limit) {
+        query = query.take(stage.$limit);
+      }
     }
 
-    const prismaAggregate: any = {
-      _group: groupBy,
-      where,
-      having,
-      order,
-      select,
-      include,
-      skip,
-      take,
-    };
-
-    if (options.sum) {
-      prismaAggregate._sum = Object.keys(options.sum).reduce(
-        (acc, key) => {
-          acc[key] = true;
-          return acc;
-        },
-        {} as Record<string, boolean>
-      );
+    if (!withDeleted) {
+      query = query.where({ [this._softDeleteColumnName]: false });
     }
 
-    if (options.avg) {
-      prismaAggregate._avg = Object.keys(options.avg).reduce(
-        (acc, key) => {
-          acc[key] = true;
-          return acc;
-        },
-        {} as Record<string, boolean>
-      );
-    }
-
-    if (options.count) {
-      prismaAggregate._count = Object.keys(options.count).reduce(
-        (acc, key) => {
-          acc[key] = true;
-          return acc;
-        },
-        {} as Record<string, boolean>
-      );
-    }
-
-    if (options.min) {
-      prismaAggregate._min = Object.keys(options.min).reduce(
-        (acc, key) => {
-          acc[key] = true;
-          return acc;
-        },
-        {} as Record<string, boolean>
-      );
-    }
-
-    if (options.max) {
-      prismaAggregate._max = Object.keys(options.max).reduce(
-        (acc, key) => {
-          acc[key] = true;
-          return acc;
-        },
-        {} as Record<string, boolean>
-      );
-    }
-
-    const result = await this.model.groupBy(prismaAggregate);
-
-    return result as Entity[];
+    return await query;
   }
 
   // ################################# Utilities ####################################
@@ -756,147 +858,322 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
   ): any {
     if (!where) return {};
 
-    const prismaWhere: any = {};
-
-    for (const [key, value] of Object.entries(where)) {
+    return Object.entries(where).reduce((acc: any, [key, value]) => {
       if (key === Op_Symbol) {
-        Object.assign(
-          prismaWhere,
-          this.convertOperatorsToPrisma(value as WhereOperators<Entity>)
-        );
-      } else if (typeof value === 'object' && value !== null) {
-        if (Op_Symbol in value) {
-          prismaWhere[key] = this.convertOperatorsToPrisma(
+        // Handle operators
+        const operators = value as WhereOperators<Entity>;
+        return this.convertOperatorsToPrisma(operators);
+      } else if (value === null) {
+        // Handle direct null comparison
+        acc[key] = null;
+      } else if (typeof value === 'object' && !Array.isArray(value)) {
+        // Handle nested conditions or relation queries
+        if (Object.keys(value).includes(Op_Symbol)) {
+          // If it has Op_Symbol, it's a nested operator condition
+          acc[key] = this.convertOperatorsToPrisma(
             value as WhereOperators<Entity>
           );
         } else {
-          prismaWhere[key] = this.convertWhereToPrisma(
+          // Otherwise, it's a nested relation query
+          acc[key] = this.convertWhereToPrisma(
             value as FindWhereOptions<Entity>
           );
         }
       } else {
-        prismaWhere[key] = value;
+        // Handle direct value comparison
+        acc[key] = value;
       }
-    }
-
-    return prismaWhere;
+      return acc;
+    }, {});
   }
 
   private convertOperatorsToPrisma(operators: WhereOperators<Entity>): any {
-    const prismaOperators: any = {};
+    return Object.entries(operators).reduce((acc: any, [op, value]) => {
+      switch (op) {
+        case FindOperator.AND:
+        case FindOperator.OR:
+          acc[op === FindOperator.AND ? 'AND' : 'OR'] = (value as any[]).map(
+            (condition) => {
+              if (Op_Symbol in condition) {
+                return this.convertOperatorsToPrisma(
+                  condition[Op_Symbol] as WhereOperators<Entity>
+                );
+              } else {
+                return this.convertWhereToPrisma(condition);
+              }
+            }
+          );
+          break;
 
-    for (const [operator, value] of Object.entries(operators)) {
-      switch (operator) {
-        case FIND_OPERATOR.LT:
-          prismaOperators.lt = value;
+        case FindOperator.LT:
+        case FindOperator.GT:
+        case FindOperator.LTE:
+        case FindOperator.GTE:
+        case FindOperator.NE:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, fieldValue]) => {
+                opAcc[field] = { [this.mapOperatorToPrisma(op)]: fieldValue };
+                return opAcc;
+              },
+              acc
+            );
+          } else {
+            // Handle direct value comparison
+            acc = { [this.mapOperatorToPrisma(op)]: value };
+          }
           break;
-        case FIND_OPERATOR.GT:
-          prismaOperators.gt = value;
+
+        case FindOperator.IN:
+        case FindOperator.NIN:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, fieldValue]) => {
+                opAcc[field] = { [this.mapOperatorToPrisma(op)]: fieldValue };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (Array.isArray(value)) {
+            // Handle direct array value comparison
+            acc = { [this.mapOperatorToPrisma(op)]: value };
+          }
           break;
-        case FIND_OPERATOR.LTE:
-          prismaOperators.lte = value;
+
+        case FindOperator.LIKE:
+        case FindOperator.ILIKE:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, fieldValue]) => {
+                opAcc[field] = {
+                  [op === FindOperator.ILIKE ? 'contains' : 'startsWith']:
+                    fieldValue,
+                  mode: op === FindOperator.ILIKE ? 'insensitive' : 'default',
+                };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (typeof value === 'string') {
+            // Handle direct string value comparison
+            acc = {
+              [op === FindOperator.ILIKE ? 'contains' : 'startsWith']: value,
+              mode: op === FindOperator.ILIKE ? 'insensitive' : 'default',
+            };
+          }
           break;
-        case FIND_OPERATOR.GTE:
-          prismaOperators.gte = value;
+
+        case FindOperator.BETWEEN:
+        case FindOperator.NOT_BETWEEN:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, [min, max]]) => {
+                opAcc[field] = {
+                  [op === FindOperator.BETWEEN ? 'gte' : 'lt']: min,
+                  [op === FindOperator.BETWEEN ? 'lte' : 'gt']: max,
+                };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (Array.isArray(value) && value.length === 2) {
+            // Handle direct array value comparison
+            const [min, max] = value;
+            acc = {
+              [op === FindOperator.BETWEEN ? 'gte' : 'lt']: min,
+              [op === FindOperator.BETWEEN ? 'lte' : 'gt']: max,
+            };
+          }
           break;
-        case FIND_OPERATOR.NE:
-          prismaOperators.not = value;
+
+        case FindOperator.ISNULL:
+        case FindOperator.NOT_NULL:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field]) => {
+                opAcc[field] = {
+                  [op === FindOperator.ISNULL ? 'equals' : 'not']: null,
+                };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (typeof value === 'boolean') {
+            // Handle direct boolean value comparison
+            acc = {
+              [op === FindOperator.ISNULL ? 'equals' : 'not']: null,
+            };
+          }
           break;
-        case FIND_OPERATOR.IN:
-          prismaOperators.in = value;
+
+        case FindOperator.ARRAY_CONTAINS:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, fieldValue]) => {
+                opAcc[field] = { some: fieldValue };
+                return opAcc;
+              },
+              acc
+            );
+          } else {
+            // Handle direct value comparison
+            acc = { some: value };
+          }
           break;
-        case FIND_OPERATOR.NIN:
-          prismaOperators.notIn = value;
+
+        case FindOperator.ANY:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, fieldValue]) => {
+                opAcc[field] = {
+                  some: {
+                    OR: Array.isArray(fieldValue) ? fieldValue : [fieldValue],
+                  },
+                };
+                return opAcc;
+              },
+              acc
+            );
+          }
           break;
-        case FIND_OPERATOR.LIKE:
-          prismaOperators.contains = value;
+
+        case FindOperator.SIZE:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, size]) => {
+                opAcc[field] = { size };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (typeof value === 'number') {
+            // Handle direct number value comparison
+            acc = { size: value };
+          }
           break;
-        case FIND_OPERATOR.ILIKE:
-          prismaOperators.contains = value;
-          prismaOperators.mode = 'insensitive';
+
+        case FindOperator.STARTSWITH:
+        case FindOperator.NOT_STARTSWITH:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, fieldValue]) => {
+                opAcc[field] = {
+                  [op === FindOperator.STARTSWITH ? 'startsWith' : 'not']: {
+                    startsWith: fieldValue,
+                  },
+                };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (typeof value === 'string') {
+            // Handle direct string value comparison
+            acc = {
+              [op === FindOperator.STARTSWITH ? 'startsWith' : 'not']: {
+                startsWith: value,
+              },
+            };
+          }
           break;
-        case FIND_OPERATOR.BETWEEN:
-          prismaOperators.gte = (value as any)[0];
-          prismaOperators.lte = (value as any)[1];
+
+        case FindOperator.ENDSWITH:
+        case FindOperator.NOT_ENDSWITH:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, fieldValue]) => {
+                opAcc[field] = {
+                  [op === FindOperator.ENDSWITH ? 'endsWith' : 'not']: {
+                    endsWith: fieldValue,
+                  },
+                };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (typeof value === 'string') {
+            // Handle direct string value comparison
+            acc = {
+              [op === FindOperator.ENDSWITH ? 'endsWith' : 'not']: {
+                endsWith: value,
+              },
+            };
+          }
           break;
-        case FIND_OPERATOR.NOT_BETWEEN:
-          prismaOperators.not = {
-            gte: (value as any)[0],
-            lte: (value as any)[1],
-          };
+
+        case FindOperator.SUBSTRING:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, fieldValue]) => {
+                opAcc[field] = { contains: fieldValue };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (typeof value === 'string') {
+            // Handle direct string value comparison
+            acc = { contains: value };
+          }
           break;
-        case FIND_OPERATOR.ISNULL:
-          prismaOperators.equals = null;
+
+        case FindOperator.MATCH:
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle field-level operator format
+            acc = Object.entries(value as object).reduce(
+              (opAcc: any, [field, pattern]) => {
+                opAcc[field] = { matches: pattern };
+                return opAcc;
+              },
+              acc
+            );
+          } else if (value instanceof RegExp) {
+            // Handle direct RegExp value comparison
+            acc = { matches: value };
+          }
           break;
-        case FIND_OPERATOR.ARRAY_CONTAINS:
-          prismaOperators.hasSome = value;
-          break;
-        case FIND_OPERATOR.SIZE:
-          // Prisma doesn't have a direct equivalent, we might need to use a raw query or adjust the data model
-          break;
-        case FIND_OPERATOR.STARTSWITH:
-          prismaOperators.startsWith = value;
-          break;
-        case FIND_OPERATOR.NOT_STARTSWITH:
-          prismaOperators.not = { startsWith: value };
-          break;
-        case FIND_OPERATOR.ENDSWITH:
-          prismaOperators.endsWith = value;
-          break;
-        case FIND_OPERATOR.NOT_ENDSWITH:
-          prismaOperators.not = { endsWith: value };
-          break;
-        case FIND_OPERATOR.SUBSTRING:
-          prismaOperators.contains = value;
-          break;
-        case FIND_OPERATOR.MATCH:
-          // Prisma doesn't support regex directly, we might need to use a raw query
-          break;
-        case FIND_OPERATOR.AND:
-          prismaOperators.AND = (value as any[]).map(this.convertWhereToPrisma);
-          break;
-        case FIND_OPERATOR.OR:
-          prismaOperators.OR = (value as any[]).map(this.convertWhereToPrisma);
-          break;
-        case FIND_OPERATOR.ANY:
-          prismaOperators.hasSome = value;
-          break;
-        default:
-          throw new ForbiddenError(`Unsupported where operator: ${operator}`);
       }
-    }
-
-    return prismaOperators;
+      return acc;
+    }, {});
   }
 
-  private convertUpdateOperatorsToPrisma(
-    operators: UpdateOperators<Entity>
-  ): any {
-    const prismaUpdateOperators: any = {};
-
-    for (const [operator, value] of Object.entries(operators)) {
-      switch (operator) {
-        case UPDATE_OPERATOR.INC:
-          for (const [field, incValue] of Object.entries(value as any)) {
-            prismaUpdateOperators[field] = { increment: incValue };
-          }
-          break;
-        case UPDATE_OPERATOR.DEC:
-          for (const [field, decValue] of Object.entries(value as any)) {
-            prismaUpdateOperators[field] = { decrement: decValue };
-          }
-          break;
-        case UPDATE_OPERATOR.MUL:
-          for (const [field, mulValue] of Object.entries(value as any)) {
-            prismaUpdateOperators[field] = { multiply: mulValue };
-          }
-          break;
-        default:
-          throw new ForbiddenError(`Unsupported update operator: ${operator}`);
-      }
-    }
-
-    return prismaUpdateOperators;
+  private mapOperatorToPrisma(operator: FindOperator): string {
+    const operatorMap: Record<FindOperator, string> = {
+      [FindOperator.LT]: 'lt',
+      [FindOperator.GT]: 'gt',
+      [FindOperator.LTE]: 'lte',
+      [FindOperator.GTE]: 'gte',
+      [FindOperator.NE]: 'not',
+      [FindOperator.IN]: 'in',
+      [FindOperator.NIN]: 'notIn',
+      [FindOperator.AND]: 'AND',
+      [FindOperator.OR]: 'OR',
+      [FindOperator.LIKE]: 'contains',
+      [FindOperator.ILIKE]: 'contains',
+      [FindOperator.BETWEEN]: 'between',
+      [FindOperator.NOT_BETWEEN]: 'notBetween',
+      [FindOperator.ISNULL]: 'equals',
+      [FindOperator.NOT_NULL]: 'not',
+      [FindOperator.ANY]: 'some',
+      [FindOperator.ARRAY_CONTAINS]: 'some',
+      [FindOperator.SIZE]: 'size',
+      [FindOperator.STARTSWITH]: 'startsWith',
+      [FindOperator.NOT_STARTSWITH]: 'not',
+      [FindOperator.ENDSWITH]: 'endsWith',
+      [FindOperator.NOT_ENDSWITH]: 'not',
+      [FindOperator.SUBSTRING]: 'contains',
+      [FindOperator.MATCH]: 'matches',
+    };
+    return operatorMap[operator];
   }
 
   private convertSelectToPrisma(
@@ -928,22 +1205,40 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
 
     return Object.entries(relations).reduce((acc: any, [key, value]) => {
       if (value === true) {
+        // Format 1: { profile: true }
         acc[key] = true;
       } else if (Array.isArray(value)) {
-        acc[key] = { select: this.convertSelectToPrisma(value) };
-      } else if (typeof value === 'object') {
+        // Format 2: { profile: ['id', 'createdAt'] }
         acc[key] = {
-          include: this.convertRelationsToPrisma(
-            value as RelationsOptions<Entity>
-          ),
+          select: value.reduce((selectAcc: any, field) => {
+            selectAcc[field] = true;
+            return selectAcc;
+          }, {}),
         };
+      } else if (typeof value === 'object') {
+        // Format 3 & 4: Nested relations
+        const nestedValue = value as RelationsOptions<Entity>;
+        const nestedResult = this.convertRelationsToPrisma(nestedValue);
+
+        // If the nested result has a select property, use it directly
+        if (
+          nestedResult &&
+          Object.keys(nestedResult).some((k) => k === 'select')
+        ) {
+          acc[key] = nestedResult;
+        } else {
+          // Otherwise, wrap it in an include
+          acc[key] = {
+            include: nestedResult,
+          };
+        }
       }
       return acc;
     }, {});
   }
 
   private convertOrderToPrisma(
-    order: Partial<{ [P in keyof Entity]?: 'asc' | 'desc' }> | undefined
+    order: Partial<{ [P in keyof Entity]?: OrderDirection }> | undefined
   ): any {
     if (!order) return undefined;
 
@@ -1002,4 +1297,84 @@ export class PrismaRepository<Entity> implements IRepository<Entity> {
 
     return prismaUpdate;
   }
+
+  private convertUpdateOperatorsToPrisma(
+    operators: UpdateOperators<Entity>
+  ): any {
+    const prismaUpdateOperators: any = {};
+
+    for (const [operator, value] of Object.entries(operators)) {
+      switch (operator) {
+        case UpdateOperator.INC:
+          for (const [field, incValue] of Object.entries(value as any)) {
+            prismaUpdateOperators[field] = { increment: incValue };
+          }
+          break;
+        case UpdateOperator.DEC:
+          for (const [field, decValue] of Object.entries(value as any)) {
+            prismaUpdateOperators[field] = { decrement: decValue };
+          }
+          break;
+        case UpdateOperator.MUL:
+          for (const [field, mulValue] of Object.entries(value as any)) {
+            prismaUpdateOperators[field] = { multiply: mulValue };
+          }
+          break;
+        default:
+          throw new ForbiddenError(`Unsupported update operator: ${operator}`);
+      }
+    }
+
+    return prismaUpdateOperators;
+  }
+
+  private buildComputedFieldExpression(config: ComputedFieldConfig): any {
+    switch (config.type) {
+      case ExpressionType.MATH:
+        return this._expressionBuilder.buildMathExpression(
+          config.expression as MathExpression
+        );
+      case ExpressionType.STRING:
+        return this._expressionBuilder.buildStringExpression(
+          config.expression as StringExpression
+        );
+      case ExpressionType.DATE:
+        return this._expressionBuilder.buildDateExpression(
+          config.expression as DateExpression
+        );
+      case ExpressionType.CONDITIONAL:
+        return this._expressionBuilder.buildConditionalExpression(
+          config.expression as ConditionalExpression
+        );
+      default:
+        throw new Error(
+          `Unsupported expression type: ${config.type as string}`
+        );
+    }
+  }
+
+  // private convertAggregateOrderToPrisma(
+  //   order: AggregateOrderOptions<Entity> | undefined
+  // ): any {
+  //   if (!order) return undefined;
+
+  //   return Object.entries(order).reduce((acc: any, [key, value]) => {
+  //     // Handle different aggregate function cases
+  //     if (key.startsWith('count_')) {
+  //       acc._count = { [key.replace('count_', '')]: value };
+  //     } else if (key.startsWith('sum_')) {
+  //       acc._sum = { [key.replace('sum_', '')]: value };
+  //     } else if (key.startsWith('avg_')) {
+  //       acc._avg = { [key.replace('avg_', '')]: value };
+  //     } else if (key.startsWith('min_')) {
+  //       acc._min = { [key.replace('min_', '')]: value };
+  //     } else if (key.startsWith('max_')) {
+  //       acc._max = { [key.replace('max_', '')]: value };
+  //     } else {
+  //       // Regular field ordering
+  //       acc[key] = value;
+  //     }
+  //     return acc;
+  //   }, {});
+  // }
 }
