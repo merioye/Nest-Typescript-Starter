@@ -16,7 +16,9 @@
       "Invalid_value": "Invalid value",
       "invalid_boolean": "{field} is not a valid boolean",
       "invalid_int": "{field} is not a valid integer",
-      "invalid_uuid": "{field} is not a valid uuid"
+      "invalid_uuid": "{field} is not a valid uuid",
+      "invalid_enum": "{field} is not a valid enum value. Allowed values: {allowedValues}",
+      "invalid_array": "{field} is not a valid array"
     }
   },
   "health": {

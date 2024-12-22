@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "nest + typescript template",
+      "name": "nest + typescript starter",
       "script": "dist/main.js",
       "autorestart": true,
       "watch": false,

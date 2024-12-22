@@ -4,12 +4,12 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
+import { setupGracefulShutdown } from 'nestjs-graceful-shutdown';
 
 import { AppModule } from './app.module';
 import { buildSwaggerConfig, loggerModuleOptions } from './config';
-import { CONFIG } from './enums';
+import { Config } from './enums';
 import { WinstonLogger } from './modules/common/logger';
-import { GracefulShutdownService } from './modules/core/graceful-shutdown';
 
 const logger = WinstonLogger.getInstance(loggerModuleOptions);
 
@@ -19,13 +19,12 @@ async function bootstrap(): Promise<void> {
   });
 
   const configService = app.get(ConfigService);
-  const PORT = configService.get<number>(CONFIG.PORT);
-  const API_PREFIX = configService.get<string>(CONFIG.API_PREFIX);
+  const PORT = configService.get<number>(Config.PORT);
+  const API_PREFIX = configService.get<string>(Config.API_PREFIX);
   const API_DEFAULT_VERSION = configService.get<string>(
-    CONFIG.API_DEFAULT_VERSION
+    Config.API_DEFAULT_VERSION
   );
 
-  app.enableShutdownHooks();
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: API_DEFAULT_VERSION,
@@ -33,11 +32,10 @@ async function bootstrap(): Promise<void> {
   app.setGlobalPrefix(API_PREFIX!);
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
-  const gracefulShutdownService = app.get(GracefulShutdownService);
-  gracefulShutdownService.setApp(app);
-
   const document = SwaggerModule.createDocument(app, buildSwaggerConfig(PORT!));
   SwaggerModule.setup(`/${API_PREFIX}/docs`, app, document);
+
+  setupGracefulShutdown({ app });
 
   await app.listen(PORT!, () => logger.info(`Listening on PORT ${PORT} 🚀`));
 }

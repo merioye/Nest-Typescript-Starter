@@ -16,7 +16,9 @@
       "Invalid_value": "Valor no válido",
       "invalid_boolean": "{field} no es un booleano válido",
       "invalid_int": "{field} no es un entero válido",
-      "invalid_uuid": "{field} no es un UUID válido"
+      "invalid_uuid": "{field} no es un UUID válido",
+      "invalid_enum": "{field} no es un valor de enumeración válido. Valores permitidos: {allowedValues}",
+      "invalid_array": "{field} no es un array válido"
     }
   },
   "health": {

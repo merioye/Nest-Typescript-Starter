@@ -10,9 +10,9 @@ export const buildSwaggerConfig = (
   PORT: number
 ): Omit<OpenAPIObject, 'paths'> => {
   const config = new DocumentBuilder()
-    .setTitle('Nest + Typescript template')
+    .setTitle('Nest + Typescript starter')
     .setDescription(
-      'This is Nest + Typescript template application made with Nest and documented with Swagger'
+      'This is Nest + Typescript starter application made with Nest and documented with Swagger'
     )
     .setVersion('1.0')
     .addServer(`http://localhost:${PORT}`, 'Local Server')

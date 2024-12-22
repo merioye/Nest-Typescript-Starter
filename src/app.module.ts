@@ -4,10 +4,11 @@ import {
   NestModule,
   ValidationPipe,
 } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import compression from 'compression';
 import helmet from 'helmet';
+import { GracefulShutdownModule } from 'nestjs-graceful-shutdown';
 
 import {
   configOptions,
@@ -18,8 +19,8 @@ import {
 import { AllExceptionsFilter } from './core/filters';
 import { ExceptionHandlingStrategyFactory } from './core/filters/factories';
 import { TranslateMessageInterceptor } from './core/interceptors/response';
+import { Config } from './enums';
 import { CommonAppModule } from './modules/common';
-import { CoreAppModule } from './modules/core';
 import { WebAppModule } from './modules/web';
 
 /**
@@ -36,7 +37,18 @@ import { WebAppModule } from './modules/web';
 @Module({
   imports: [
     ConfigModule.forRoot(configOptions),
-    CoreAppModule,
+    GracefulShutdownModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        gracefulShutdownTimeout: configService.get<number>(
+          Config.GRACEFUL_SHUTDOWN_TIMEOUT
+        ),
+        cleanup(): void {
+          // Add any cleanup logic here
+        },
+      }),
+    }),
     CommonAppModule.forRoot({
       logger: loggerModuleOptions,
       translator: translatorModuleOptions,

@@ -16,7 +16,9 @@
       "Invalid_value": "غیر درست قیمت",
       "invalid_boolean": "درست بولین نہیں ہے {field}",
       "invalid_int": "درست عدد نہیں ہے {field}",
-      "invalid_uuid": "UUID نہیں ہے درست {field}"
+      "invalid_uuid": "UUID نہیں ہے درست {field}",
+      "invalid_enum": "{allowedValues} :نہیں درست ایک ایونم ویلد کی قیمت ہے. مجاز قیمتوں {field}",
+      "invalid_array": "نہیں درست ایک اریہ ویلد کی قیمت ہے {field}"
     }
   },
   "health": {

@@ -1,4 +1,4 @@
-# NestJS TypeScript Template
+# NestJS TypeScript Starter
 
 ## Project Overview
 

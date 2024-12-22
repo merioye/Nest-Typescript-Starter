@@ -1,9 +1,11 @@
-FROM node:20.0.0-alpine
+ARG NODE_VERSION=20.0.0
+FROM node:${NODE_VERSION}-alpine
+ENV PORT=8000
 
 # Add non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-WORKDIR /app
+WORKDIR /workspace
 
 # Copy package files for better caching
 COPY package*.json ./
@@ -11,7 +13,7 @@ COPY package*.json ./
 # Install dependencies using npm ci for consistent builds
 RUN npm ci && \
     npm cache clean --force && \
-    chown -R appuser:appgroup /app
+    chown -R appuser:appgroup /workspace
 
 # Switch to non-root user
 USER appuser
@@ -19,5 +21,5 @@ USER appuser
 # Copy source code
 COPY --chown=appuser:appgroup . .
 
-EXPOSE 8000
+EXPOSE ${PORT}
 CMD ["npm", "run", "start:dev"]

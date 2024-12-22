@@ -11,7 +11,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 import { LoggerErrorMetadata } from '@/types';
-import { CONFIG, ENVIRONMENT } from '@/enums';
+import { Config, Environment } from '@/enums';
 
 import { ExceptionHandlingStrategyFactory } from './factories';
 
@@ -51,8 +51,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const errorId = uuidv4();
     const isProduction =
-      this._configService.get<ENVIRONMENT>(CONFIG.NODE_ENV) ===
-      ENVIRONMENT.PROD;
+      this._configService.get<Environment>(Config.NODE_ENV) ===
+      Environment.PROD;
 
     const strategy =
       this._exceptionHandlingStrategyFactory.createStrategy(exception);

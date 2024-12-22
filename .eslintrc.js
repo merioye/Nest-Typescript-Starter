@@ -48,6 +48,7 @@ module.exports = {
         endOfLine: 'auto',
       },
     ],
+    'jest/no-conditional-expect': 'off',
   },
   settings: {
     'import/parsers': {

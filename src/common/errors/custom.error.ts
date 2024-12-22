@@ -24,7 +24,10 @@ export class CustomError extends Error {
     private readonly _statusCode: number
   ) {
     super(message);
+    // Ensure proper prototype chain
     Object.setPrototypeOf(this, CustomError.prototype);
+    // Capture stack trace
+    Error.captureStackTrace(this, this.constructor);
   }
 
   /**

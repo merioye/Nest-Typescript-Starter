@@ -1,4 +1,4 @@
-import { ENVIRONMENT } from '@/enums';
+import { Environment } from '@/enums';
 
 /**
  * Type representing an error object.
@@ -71,12 +71,13 @@ type ExceptionResponseBody = {
  *
  * @typedef LoggerModuleOptions
  *
- * @property {ENVIRONMENT} environment - The environment in which the application is running.
+ * @property {Environment} environment - The environment in which the application is running.
  * @property {string} logsDirPath - The path to the directory where logs will be stored.
  */
 type LoggerModuleOptions = {
-  environment: ENVIRONMENT;
+  environment: Environment;
   logsDirPath: string;
+  debugMode: boolean;
 };
 
 /**
@@ -105,5 +106,4 @@ export {
   LoggerModuleOptions,
   TranslatorModuleOptions,
 };
-export * from './database.types';
 export * from './api-response.types';
