@@ -1,6 +1,8 @@
 import { Controller, Get, Inject } from '@nestjs/common';
 import { ILogger, LoggerToken } from '@/modules/common/logger';
 
+import { EndPoint } from '@/constants';
+
 import { HealthServiceToken } from './constants';
 import { IHealthService } from './interfaces';
 import { Health } from './types';
@@ -30,7 +32,7 @@ export class HealthController {
    *
    * @returns The health information.
    */
-  @Get('/healthcheck')
+  @Get(EndPoint.Health.Get.HealthCheck)
   public checkHealth(): Health {
     this._logger.info('Request for checking server health');
     return this._healthService.health();

@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommonAppModule } from '@/modules/common';
 import { LoggerToken } from '@/modules/common/logger';
+import { I18nModule } from 'nestjs-i18n';
 
 import { loggerModuleOptions, translatorModuleOptions } from '@/config';
 
-import { TranslatorServiceToken } from '../../translator';
+import { TranslatorServiceToken } from '../constants';
 
-describe('LoggerModule', () => {
+describe('TranslatorModule', () => {
   let module: TestingModule;
 
   beforeAll(async () => {
@@ -42,7 +43,7 @@ describe('LoggerModule', () => {
     expect(module).toBeDefined();
   });
 
-  it('should have the expected components', () => {
-    expect(module.get(LoggerToken)).toBeInstanceOf(Object);
+  it('should have TranslatorModule components', () => {
+    expect(module.get(I18nModule)).toBeInstanceOf(I18nModule);
   });
 });

@@ -1,12 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommonAppModule } from '@/modules/common';
 import { LoggerToken } from '@/modules/common/logger';
+import { TranslatorServiceToken } from '@/modules/common/translator';
 
 import { loggerModuleOptions, translatorModuleOptions } from '@/config';
 
-import { TranslatorServiceToken } from '../../translator';
+import { HealthModule } from '../health';
+import { WebAppModule } from '../web.module';
 
-describe('LoggerModule', () => {
+describe('WebAppModule', () => {
   let module: TestingModule;
 
   beforeAll(async () => {
@@ -24,7 +26,7 @@ describe('LoggerModule', () => {
           logger: loggerModuleOptions,
           translator: translatorModuleOptions,
         }),
-        CommonAppModule,
+        WebAppModule,
       ],
     })
       .overrideProvider(TranslatorServiceToken)
@@ -42,7 +44,7 @@ describe('LoggerModule', () => {
     expect(module).toBeDefined();
   });
 
-  it('should have the expected components', () => {
-    expect(module.get(LoggerToken)).toBeInstanceOf(Object);
+  it('should have WebAppModule components', () => {
+    expect(module.get(HealthModule)).toBeInstanceOf(HealthModule);
   });
 });

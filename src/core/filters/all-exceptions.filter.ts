@@ -31,7 +31,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
    * @param exceptionHandlingStrategyFactory - Factory for creating exception handling strategies.
    */
   public constructor(
-    @Inject(LoggerToken) private readonly logger: ILogger,
+    @Inject(LoggerToken) private readonly _logger: ILogger,
     private readonly _httpAdapterHost: HttpAdapterHost,
     private readonly _configService: ConfigService,
     @Inject(TranslatorServiceToken)
@@ -79,7 +79,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     const message = this._translatorService.t(exception.message, 'en');
-    this.logger.error(message, metadata);
+    this._logger.error(message, metadata);
 
     httpAdapter.reply(ctx.getResponse(), responseBody, responseBody.statusCode);
   }

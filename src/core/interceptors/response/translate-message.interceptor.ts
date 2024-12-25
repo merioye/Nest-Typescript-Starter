@@ -50,10 +50,14 @@ export class TranslateMessageInterceptor implements NestInterceptor {
           return response;
         }
 
-        return {
-          ...response,
-          message: this._translatorService.t(response.message),
-        };
+        try {
+          return {
+            ...response,
+            message: this._translatorService.t(response.message),
+          };
+        } catch {
+          return response; // Fallback to original response if translation fails
+        }
       })
     );
   }

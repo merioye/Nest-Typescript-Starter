@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommonAppModule } from '@/modules/common';
-import { LoggerToken } from '@/modules/common/logger';
+import { LoggerModule, LoggerToken } from '@/modules/common/logger';
 
 import { loggerModuleOptions, translatorModuleOptions } from '@/config';
 
-import { TranslatorServiceToken } from '../../translator';
+import { TranslatorModule, TranslatorServiceToken } from '../translator';
 
-describe('LoggerModule', () => {
+describe('CommonAppModule', () => {
   let module: TestingModule;
 
   beforeAll(async () => {
@@ -42,7 +42,8 @@ describe('LoggerModule', () => {
     expect(module).toBeDefined();
   });
 
-  it('should have the expected components', () => {
-    expect(module.get(LoggerToken)).toBeInstanceOf(Object);
+  it('should have CommonAppModule components', () => {
+    expect(module.get(LoggerModule)).toBeInstanceOf(LoggerModule);
+    expect(module.get(TranslatorModule)).toBeInstanceOf(TranslatorModule);
   });
 });

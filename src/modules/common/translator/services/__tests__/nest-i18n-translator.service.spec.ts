@@ -1,144 +1,257 @@
-// import { I18nContext, I18nService } from 'nestjs-i18n';
+/* eslint-disable @typescript-eslint/unbound-method */
+import { Test, TestingModule } from '@nestjs/testing';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
-// import {
-//   ITranslationKeyFormatterService,
-//   ITranslatorService,
-// } from '../../interfaces';
-// import { NestI18nTranslatorService } from '../nest-i18n-translator.service';
+import {
+  TranslationKeyFormatterServiceToken,
+  TranslationsFileNameToken,
+} from '../../constants';
+import { ITranslationKeyFormatterService } from '../../interfaces';
+import { NestI18nTranslatorService } from '../nest-i18n-translator.service';
 
-// jest.mock('nestjs-i18n', () => ({
-//   I18nService: jest.fn(),
-//   I18nContext: {
-//     current: jest.fn(),
-//   },
-// }));
+describe('NestI18nTranslatorService', () => {
+  let service: NestI18nTranslatorService;
+  let i18nService: jest.Mocked<I18nService>;
+  let formatterService: jest.Mocked<ITranslationKeyFormatterService>;
+  let translationsFileName: string;
 
-// describe('NestI18nTranslatorService', () => {
-//   let service: ITranslatorService;
-//   let i18nService: jest.Mocked<I18nService>;
-//   let formatterService: jest.Mocked<ITranslationKeyFormatterService>;
+  beforeEach(async () => {
+    // Mock I18nService
+    i18nService = {
+      translate: jest.fn(),
+    } as unknown as jest.Mocked<I18nService>;
 
-//   const translationsFileName = 'messages.json';
-//   const defaultLang = 'en';
+    // Mock formatter service
+    formatterService = {
+      format: jest.fn(),
+    };
 
-//   beforeEach(() => {
-//     i18nService = {
-//       translate: jest.fn(),
-//     } as unknown as jest.Mocked<I18nService>;
+    translationsFileName = 'translations.json';
 
-//     formatterService = {
-//       format: jest.fn(),
-//     } as jest.Mocked<ITranslationKeyFormatterService>;
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        NestI18nTranslatorService,
+        {
+          provide: I18nService,
+          useValue: i18nService,
+        },
+        {
+          provide: TranslationKeyFormatterServiceToken,
+          useValue: formatterService,
+        },
+        {
+          provide: TranslationsFileNameToken,
+          useValue: translationsFileName,
+        },
+      ],
+    }).compile();
 
-//     (I18nContext.current as jest.Mock).mockReturnValue({ lang: defaultLang });
+    service = module.get<NestI18nTranslatorService>(NestI18nTranslatorService);
+  });
 
-//     service = new NestI18nTranslatorService(
-//       formatterService,
-//       i18nService,
-//       translationsFileName
-//     );
-//   });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-//   afterEach(() => {
-//     jest.clearAllMocks();
-//   });
+  describe('constructor', () => {
+    it('should be defined', () => {
+      expect(service).toBeDefined();
+    });
 
-//   describe('t', () => {
-//     const testKey = 'test.key';
-//     const testArgs = { name: 'John' };
-//     const expectedTranslation = 'Hello John';
+    it('should inject all required dependencies', () => {
+      expect(service['_i18n']).toBeDefined();
+      expect(service['_translationKeyFormatterService']).toBeDefined();
+      expect(service['_translationsFileName']).toBeDefined();
+    });
 
-//     beforeEach(() => {
-//       formatterService.format.mockReturnValue({
-//         key: testKey,
-//         args: testArgs,
-//       });
-//       i18nService.translate.mockReturnValue(expectedTranslation);
-//     });
+    it('should throw error when i18n service is not provided', async () => {
+      await expect(
+        Test.createTestingModule({
+          providers: [
+            NestI18nTranslatorService,
+            {
+              provide: TranslationKeyFormatterServiceToken,
+              useValue: formatterService,
+            },
+            {
+              provide: TranslationsFileNameToken,
+              useValue: translationsFileName,
+            },
+          ],
+        }).compile()
+      ).rejects.toThrow();
+    });
 
-//     it('should translate with default language from context', () => {
-//       const result = service.t(testKey);
+    it('should throw error when formatter service is not provided', async () => {
+      await expect(
+        Test.createTestingModule({
+          providers: [
+            NestI18nTranslatorService,
+            {
+              provide: I18nService,
+              useValue: i18nService,
+            },
+            {
+              provide: TranslationsFileNameToken,
+              useValue: translationsFileName,
+            },
+          ],
+        }).compile()
+      ).rejects.toThrow();
+    });
+  });
 
-//       expect(formatterService.format).toHaveBeenCalledWith(testKey);
-//       expect(i18nService.translate).toHaveBeenCalledWith('messages.test.key', {
-//         lang: defaultLang,
-//         args: testArgs,
-//       });
-//       expect(result).toBe(expectedTranslation);
-//     });
+  describe('t', () => {
+    beforeEach(() => {
+      // Reset mocks before each test
+      formatterService.format.mockReset();
+      i18nService.translate.mockReset();
+    });
 
-//     it('should translate with provided language', () => {
-//       const customLang = 'fr';
-//       const result = service.t(testKey, customLang);
+    it('should properly format and translate a key', () => {
+      const key = 'test.key';
+      const formattedResult = {
+        key: 'formatted.key',
+        args: { param: 'value' },
+      };
+      const expectedTranslation = 'Translated text';
 
-//       expect(formatterService.format).toHaveBeenCalledWith(testKey);
-//       expect(i18nService.translate).toHaveBeenCalledWith('messages.test.key', {
-//         lang: customLang,
-//         args: testArgs,
-//       });
-//       expect(result).toBe(expectedTranslation);
-//     });
+      formatterService.format.mockReturnValue(formattedResult);
+      i18nService.translate.mockReturnValue(expectedTranslation);
 
-//     it('should handle empty translation file name', () => {
-//       service = new NestI18nTranslatorService(
-//         formatterService,
-//         i18nService,
-//         ''
-//       );
+      const result = service.t(key);
 
-//       const result = service.t(testKey);
+      expect(formatterService.format).toHaveBeenCalledWith(key);
+      expect(i18nService.translate).toHaveBeenCalledWith(
+        'translations.formatted.key',
+        expect.any(Object)
+      );
+      expect(result).toBe(expectedTranslation);
+    });
 
-//       expect(formatterService.format).toHaveBeenCalledWith(testKey);
-//       expect(i18nService.translate).toHaveBeenCalledWith(testKey, {
-//         lang: defaultLang,
-//         args: testArgs,
-//       });
-//       expect(result).toBe(expectedTranslation);
-//     });
+    it('should handle explicit language parameter', () => {
+      const key = 'test.key';
+      const lang = 'fr';
+      const formattedResult = { key: 'formatted.key', args: {} };
 
-//     it('should handle undefined I18nContext', () => {
-//       (I18nContext.current as jest.Mock).mockReturnValue(undefined);
-//       const result = service.t(testKey);
+      formatterService.format.mockReturnValue(formattedResult);
+      i18nService.translate.mockReturnValue('Translated text');
 
-//       expect(formatterService.format).toHaveBeenCalledWith(testKey);
-//       expect(i18nService.translate).toHaveBeenCalledWith('messages.test.key', {
-//         lang: undefined,
-//         args: testArgs,
-//       });
-//       expect(result).toBe(expectedTranslation);
-//     });
+      service.t(key, lang);
 
-//     it('should handle translation file name with extension', () => {
-//       service = new NestI18nTranslatorService(
-//         formatterService,
-//         i18nService,
-//         'messages.json'
-//       );
+      expect(i18nService.translate).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ lang: 'fr' })
+      );
+    });
 
-//       const result = service.t(testKey);
+    it('should use I18nContext.current() language when no lang provided', () => {
+      const key = 'test.key';
+      const formattedResult = { key: 'formatted.key', args: {} };
+      const contextLang = 'es';
 
-//       expect(formatterService.format).toHaveBeenCalledWith(testKey);
-//       expect(i18nService.translate).toHaveBeenCalledWith('messages.test.key', {
-//         lang: defaultLang,
-//         args: testArgs,
-//       });
-//       expect(result).toBe(expectedTranslation);
-//     });
+      // Mock I18nContext.current()
+      jest.spyOn(I18nContext, 'current').mockReturnValue({
+        lang: contextLang,
+      } as I18nContext<unknown>);
 
-//     it('should handle no translation args', () => {
-//       formatterService.format.mockReturnValue({
-//         key: testKey,
-//         args: undefined,
-//       });
+      formatterService.format.mockReturnValue(formattedResult);
 
-//       const result = service.t(testKey);
+      service.t(key);
 
-//       expect(formatterService.format).toHaveBeenCalledWith(testKey);
-//       expect(i18nService.translate).toHaveBeenCalledWith('messages.test.key', {
-//         lang: defaultLang,
-//         args: undefined,
-//       });
-//       expect(result).toBe(expectedTranslation);
-//     });
-//   });
-// });
+      expect(i18nService.translate).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ lang: contextLang })
+      );
+    });
+
+    it('should handle empty translations filename', async () => {
+      const moduleWithEmptyFileName = await Test.createTestingModule({
+        providers: [
+          NestI18nTranslatorService,
+          {
+            provide: I18nService,
+            useValue: i18nService,
+          },
+          {
+            provide: TranslationKeyFormatterServiceToken,
+            useValue: formatterService,
+          },
+          {
+            provide: TranslationsFileNameToken,
+            useValue: '',
+          },
+        ],
+      }).compile();
+
+      const serviceWithEmptyFileName =
+        moduleWithEmptyFileName.get<NestI18nTranslatorService>(
+          NestI18nTranslatorService
+        );
+
+      const key = 'test.key';
+      const formattedResult = { key: 'formatted.key', args: {} };
+
+      formatterService.format.mockReturnValue(formattedResult);
+
+      serviceWithEmptyFileName.t(key);
+
+      expect(i18nService.translate).toHaveBeenCalledWith(
+        'formatted.key',
+        expect.any(Object)
+      );
+    });
+
+    it('should handle formatter returning empty args', () => {
+      const key = 'test.key';
+      const formattedResult = { key: 'formatted.key', args: {} };
+
+      formatterService.format.mockReturnValue(formattedResult);
+
+      service.t(key);
+
+      expect(i18nService.translate).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ args: {} })
+      );
+    });
+
+    it('should handle null I18nContext', () => {
+      const key = 'test.key';
+      const formattedResult = { key: 'formatted.key', args: {} };
+
+      // Mock I18nContext.current() returning null
+      jest
+        .spyOn(I18nContext, 'current')
+        .mockReturnValue(null as unknown as I18nContext<unknown>);
+
+      formatterService.format.mockReturnValue(formattedResult);
+
+      service.t(key);
+
+      expect(i18nService.translate).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ lang: undefined })
+      );
+    });
+
+    it('should handle complex translation keys', () => {
+      const key = 'nested.very.deep.key';
+      const formattedResult = {
+        key: 'formatted.nested.key',
+        args: { param1: 'value1', param2: 'value2' },
+      };
+
+      formatterService.format.mockReturnValue(formattedResult);
+
+      service.t(key);
+
+      expect(i18nService.translate).toHaveBeenCalledWith(
+        'translations.formatted.nested.key',
+        expect.objectContaining({
+          args: { param1: 'value1', param2: 'value2' },
+        })
+      );
+    });
+  });
+});
